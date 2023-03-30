@@ -2,11 +2,11 @@ mod ext;
 mod types;
 mod words;
 
-use types::{Outcome, ALPHABET_HASH, ENTROPY_HASH};
+use types::{Outcome, ALPHABET_HASH, ENTROPY_HASH, Word};
 
 use crate::words::{answers::ANSWERS, guesses::GUESSES};
 
-fn entropy(guess: &[u8; 5], remaining_ans: &Vec<[u8; 5]>) -> f64 {
+fn entropy(guess: &Word, remaining_ans: &Vec<Word>) -> f64 {
     let mut results = ENTROPY_HASH;
     for answer in remaining_ans {
         let outcome = outcome(guess, &answer) as usize;
@@ -22,7 +22,7 @@ fn entropy(guess: &[u8; 5], remaining_ans: &Vec<[u8; 5]>) -> f64 {
     entropy
 }
 
-fn outcome(guess: &[u8; 5], answer: &[u8; 5]) -> Outcome {
+fn outcome(guess: &Word, answer: &Word) -> Outcome {
     let mut outcome = 0;
     let mut d_answer = ALPHABET_HASH;
     answer
@@ -60,6 +60,7 @@ fn main() {
     let all_answers = words::build(&ANSWERS);
     let all_guesses = words::build(&GUESSES);
     let mut best = (b"xxxxx", -1.0);
+    let path: Vec<Word> = vec![];
     for guess in GUESSES {
         let entropy = entropy(guess, &all_answers);
         if entropy > best.1 {
