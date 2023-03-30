@@ -59,5 +59,13 @@ fn outcome_test() {
 fn main() {
     let all_answers = words::build(&ANSWERS);
     let all_guesses = words::build(&GUESSES);
+    let mut best = (b"xxxxx", -1.0);
+    for guess in GUESSES {
+        let entropy = entropy(guess, &all_answers);
+        if entropy > best.1 {
+            best = (guess, entropy);
+        }
+    }
+    println!("best guess: {:?}", String::from_utf8_lossy(best.0));
     println!("{}", entropy(b"soare", &all_answers));
 }
