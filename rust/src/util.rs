@@ -1,8 +1,4 @@
-use crate::words;
-use crate::{
-    types::{Outcome, Word, ALPHABET_HASH, ENTROPY_HASH},
-    words::answers::ANSWERS,
-};
+use crate::types::{Outcome, Word, ALPHABET_HASH, ENTROPY_HASH};
 
 /// Generate an outcome from scratch (faster than a HashMap, apparently)
 pub fn outcome(guess: &Word, answer: &Word) -> Outcome {

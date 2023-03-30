@@ -62,37 +62,45 @@ pub fn suggest<'a>(guesses: &'a [&Word], answers: &Vec<Word>, path: &Vec<Word>) 
     best.0
 }
 
-fn main() {
-    let all_answers = words::build(&ANSWERS);
-    let all_guesses = words::build(&GUESSES);
-    let mut graph = Node::new(None);
-
-    let mut remaining_ans = all_answers.clone();
-
-    let fixed = b"frame";
+fn solve(fixed_answer: &Word, graph: &mut Node) {
+    let mut remaining_ans = words::build(&ANSWERS);
     let path: Vec<Word> = vec![];
 
-    let guess1 = suggest(&GUESSES, &remaining_ans, &path);
-    let out = outcome(guess1, fixed);
-    reduce_ans(&mut remaining_ans, guess1, out);
-    graph.push(path.as_slice(), guess1);
-
-    let guess2 = suggest(&GUESSES, &remaining_ans, &path);
-    let out = outcome(guess2, fixed);
-    reduce_ans(&mut remaining_ans, guess2, out);
-    graph.push(path.as_slice(), guess2);
-
-
-    println!("guess1: {:?}", String::from_utf8_lossy(guess1));
-    println!("guess2: {:?}", String::from_utf8_lossy(guess2));
+    while remaining_ans.len() > 1 {
+        let guess = suggest(&GUESSES, &remaining_ans, &path);
+        let out = outcome(guess, fixed_answer);
+        reduce_ans(&mut remaining_ans, guess, out);
+        graph.push(path.as_slice(), guess);
+    }
     println!(
-        "graph: {:?}",
-        graph
-            .trace(path.as_slice())
-            .as_ref()
-            .map(|v| String::from_utf8_lossy(v))
+        "generated answer: {:?}",
+        String::from_utf8_lossy(&remaining_ans[0])
     );
-    println!("outcome: {:?}", out);
-    println!("possible remained: {:?}", remaining_ans.len());
-    println!("{}", entropy(b"soare", &all_answers));
+}
+
+fn main() {
+    let all_answers = words::build(&ANSWERS);
+    let sample = &all_answers[..1];
+    let mut graph = Node::new(None);
+
+    for fixed_answer in sample {
+        solve(fixed_answer, &mut graph);
+        println!(
+            "correct answer: {:?}",
+            String::from_utf8_lossy(fixed_answer)
+        );
+    }
+
+    // println!("guess1: {:?}", String::from_utf8_lossy(guess1));
+    // println!("guess2: {:?}", String::from_utf8_lossy(guess2));
+    // println!(
+    //     "graph: {:?}",
+    //     graph
+    //         .trace(path.as_slice())
+    //         .as_ref()
+    //         .map(|v| String::from_utf8_lossy(v))
+    // );
+    // println!("outcome: {:?}", out);
+    // println!("possible remained: {:?}", remaining_ans.len());
+    // println!("{}", entropy(b"soare", &all_answers));
 }
