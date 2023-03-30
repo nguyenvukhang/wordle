@@ -1,4 +1,10 @@
+use std::borrow::Cow;
+
 use crate::types::{Outcome, Word, ALPHABET_HASH, ENTROPY_HASH};
+
+pub fn st(w: &Word) -> Cow<'_, str> {
+    String::from_utf8_lossy(w)
+}
 
 /// Generate an outcome from scratch (faster than a HashMap, apparently)
 pub fn outcome(guess: &Word, answer: &Word) -> Outcome {
@@ -49,6 +55,8 @@ pub fn entropy(guess: &Word, answers: &Vec<Word>) -> f64 {
 
 #[test]
 fn entropy_test() {
+    use crate::words;
+    use crate::words::answers::ANSWERS;
     let answers = words::build(&ANSWERS);
     macro_rules! test {
         ($word:expr, $val:expr) => {
