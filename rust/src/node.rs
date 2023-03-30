@@ -13,20 +13,18 @@ impl Node {
         Self { guess, next }
     }
 
-    pub fn trace(&self, path: &[(Outcome, Option<Word>)]) -> Option<Word> {
-        if path.is_empty() {
-            return self.guess;
-        }
-        let (outcome, word) = path.first()?;
-        self.next.get(outcome)?.trace(&path[1..])
+    pub fn cached(&self) -> Option<Word> {
+        self.guess
     }
 
-    pub fn push<'a>(&'a mut self, outcome: Outcome, guess: &Word) -> &'a mut Self {
+    pub fn push<'a>(&'a mut self, guess: Word, outcome: Outcome) -> &'a mut Self {
+        if let Some(current) = self.guess {
+            assert_eq!(current, guess);
+        }
+        self.guess = Some(guess);
         let has = self.next.contains_key(&outcome);
         if !has {
-            let guess = guess.to_owned();
-            let node = Node::new(Some(guess.to_owned()));
-            self.next.insert(outcome, node);
+            self.next.insert(outcome, Node::new(None));
         }
         self.next.get_mut(&outcome).unwrap()
     }

@@ -28,7 +28,6 @@ pub fn suggest<'a>(guesses: &'a [&Word], answers: &Vec<Word>) -> &'a Word {
 
 fn solve(fixed_answer: &Word, mut graph: &mut Node) {
     let mut remaining_ans = words::build(&ANSWERS);
-    let mut path: Vec<Word> = vec![];
     let mut limit = 7;
 
     while remaining_ans.len() > 1 {
@@ -36,20 +35,14 @@ fn solve(fixed_answer: &Word, mut graph: &mut Node) {
             break;
         }
         limit -= 1;
-        // let guess = match graph.trace(path.as_slice()) {
-        //     Some(v) => v.to_owned(),
-        //     None => suggest(&GUESSES, &remaining_ans).to_owned(),
-        // };
-        let guess = suggest(&GUESSES, &remaining_ans).to_owned();
+        let guess = match graph.cached() {
+            Some(v) => v.to_owned(),
+            None => suggest(&GUESSES, &remaining_ans).to_owned(),
+        };
         let out = outcome(&guess, fixed_answer);
         reduce_ans(&mut remaining_ans, &guess, out);
-        graph = graph.push(out, &guess);
-        path.push(guess);
-        println!(
-            "{:?}\n{:?}",
-            graph,
-            path.iter().map(|v| st(v)).collect::<Vec<_>>()
-        );
+        graph = graph.push(guess, out);
+        println!("intermediate -> {:?}", graph,);
     }
     println!(
         "generated answer: {:?}",
