@@ -3,12 +3,25 @@ mod util;
 mod words;
 
 use crate::words::{answers::ANSWERS, guesses::GUESSES};
+use std::collections::HashMap;
 use types::{Outcome, Word};
 use util::{entropy, outcome};
 
 /// Reduce the answer list based on a guess and the received outcome
 pub fn reduce_ans(answers: &mut Vec<Word>, guess: &Word, out: Outcome) {
     answers.retain(|answer| outcome(guess, answer) == out);
+}
+
+struct Node {
+    next: HashMap<Word, Word>,
+}
+
+impl Node {
+    pub fn new() -> Self {
+        Self {
+            next: HashMap::new(),
+        }
+    }
 }
 
 /// suggest a next word to play
@@ -26,6 +39,7 @@ pub fn suggest<'a>(guesses: &'a [&Word], answers: &Vec<Word>, path: &Vec<Word>) 
 fn main() {
     let all_answers = words::build(&ANSWERS);
     let all_guesses = words::build(&GUESSES);
+    let graph = Node::new();
 
     let mut remaining_ans = all_answers.clone();
 
