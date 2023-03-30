@@ -26,15 +26,11 @@ pub fn suggest<'a>(guesses: &'a [&Word], answers: &Vec<Word>) -> &'a Word {
     best.0
 }
 
-fn solve(fixed_answer: &Word, mut graph: &mut Node) {
+fn solve(fixed_answer: &Word, mut graph: &mut Node) -> (u32, Word) {
     let mut remaining_ans = words::build(&ANSWERS);
-    let mut limit = 7;
+    let mut tries = 0;
 
     while remaining_ans.len() > 1 {
-        if limit < 1 {
-            break;
-        }
-        limit -= 1;
         let guess = match graph.cached() {
             Some(v) => v.to_owned(),
             None => suggest(&GUESSES, &remaining_ans).to_owned(),
@@ -42,38 +38,29 @@ fn solve(fixed_answer: &Word, mut graph: &mut Node) {
         let out = outcome(&guess, fixed_answer);
         reduce_ans(&mut remaining_ans, &guess, out);
         graph = graph.push(guess, out);
-        println!("intermediate -> {:?}", graph,);
+        tries += 1;
     }
-    println!(
-        "generated answer: {:?}",
-        String::from_utf8_lossy(&remaining_ans[0])
-    );
+    (tries, remaining_ans[0])
 }
 
 fn main() {
+    let runs = Some(1000);
+
     let all_answers = words::build(&ANSWERS);
-    let sample = &all_answers[..1];
+    let runs = runs.unwrap_or(all_answers.len());
+    let sample = &all_answers[..runs];
+
     let mut graph = Node::new(None);
 
-    for fixed_answer in sample {
-        solve(fixed_answer, &mut graph);
-        println!(
-            "correct answer: {:?}",
-            String::from_utf8_lossy(fixed_answer)
-        );
-        println!("graph state -> {:?}", graph);
-    }
+    let mut total_tries = 0u32;
+    let mut counter = 1;
 
-    // println!("guess1: {:?}", String::from_utf8_lossy(guess1));
-    // println!("guess2: {:?}", String::from_utf8_lossy(guess2));
-    // println!(
-    //     "graph: {:?}",
-    //     graph
-    //         .trace(path.as_slice())
-    //         .as_ref()
-    //         .map(|v| String::from_utf8_lossy(v))
-    // );
-    // println!("outcome: {:?}", out);
-    // println!("possible remained: {:?}", remaining_ans.len());
-    // println!("{}", entropy(b"soare", &all_answers));
+    for fixed_answer in sample {
+        println!("{counter}");
+        counter += 1;
+        let (tries, generated_answer) = solve(fixed_answer, &mut graph);
+        assert_eq!(st(fixed_answer), st(&generated_answer));
+        total_tries += tries;
+    }
+    println!("avg tries: {}", total_tries as f64 / runs as f64)
 }
