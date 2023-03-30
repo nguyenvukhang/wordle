@@ -60,7 +60,7 @@ fn main() {
     let mut prev = start;
 
     for i in 0..len {
-        if i % printerval == 0 {
+        if i % printerval == 0 && i > 0 {
             println!("{i}/{} ({:?})", all_answers.len(), Instant::elapsed(&prev));
             prev = Instant::now();
         }

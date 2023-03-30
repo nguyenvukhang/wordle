@@ -35,19 +35,20 @@ fn outcome_test() {
     assert_eq!(outcome(b"zzzzz", b"zzzzz"), 242);
     assert_eq!(outcome(b"eezzz", b"zzzee"), 130);
     assert_eq!(outcome(b"adieu", b"audio"), 199);
+    assert_eq!(outcome(b"crust", b"rebut"), 38);
 }
 
 /// Calculates the entropy (information stood to gain) of a guess
 /// against a known list of possible answers
 pub fn entropy(guess: &Word, answers: &Vec<Word>) -> f64 {
-    let (mut results, mut entropy, len) = ([0; 243], 0.0, answers.len() as f64);
+    let (mut freq, mut entropy, len) = ([0; 243], 0.0, answers.len() as f64);
     for answer in answers {
-        results[outcome(guess, &answer) as usize] += 1;
+        freq[outcome(guess, &answer) as usize] += 1;
     }
-    for i in results {
-        if i > 0 {
-            let i = i as f64;
-            entropy += i / len * (len / i).log2();
+    for f in freq {
+        if f > 0 {
+            let f = f as f64;
+            entropy += f / len * (len / f).log2();
         }
     }
     entropy
