@@ -1,9 +1,10 @@
+mod node;
 mod types;
 mod util;
 mod words;
 
+use crate::node::Node;
 use crate::words::{answers::ANSWERS, guesses::GUESSES};
-use std::collections::HashMap;
 use types::{Outcome, Word};
 use util::{entropy, outcome};
 
@@ -12,46 +13,8 @@ pub fn reduce_ans(answers: &mut Vec<Word>, guess: &Word, out: Outcome) {
     answers.retain(|answer| outcome(guess, answer) == out);
 }
 
-struct Node {
-    next: HashMap<Word, Node>,
-    guessed: Option<Word>,
-}
-
-impl Node {
-    pub fn new(guess: Option<Word>) -> Self {
-        Self {
-            next: HashMap::new(),
-            guessed: guess,
-        }
-    }
-
-    pub fn trace(&self, path: &[Word]) -> Option<Word> {
-        if path.is_empty() {
-            return self.guessed;
-        }
-        let front = path.first()?;
-        self.next.get(front)?.trace(&path[1..])
-    }
-
-    pub fn push(&mut self, path: &[Word], guess: &Word) {
-        let front = match path.first() {
-            None => {
-                self.guessed = Some(guess.to_owned());
-                return;
-            }
-            Some(v) => v,
-        };
-        match self.next.get_mut(front) {
-            Some(v) => v.push(&path[1..], guess),
-            None => {
-                self.next.insert(*front, Node::new(Some(guess.to_owned())));
-            }
-        }
-    }
-}
-
 /// suggest a next word to play
-pub fn suggest<'a>(guesses: &'a [&Word], answers: &Vec<Word>, path: &Vec<Word>) -> &'a Word {
+pub fn suggest<'a>(guesses: &'a [&Word], answers: &Vec<Word>) -> &'a Word {
     let mut best = (guesses[0], -1.0);
     for guess in guesses {
         let entropy = entropy(guess, &answers);
@@ -67,10 +30,14 @@ fn solve(fixed_answer: &Word, graph: &mut Node) {
     let path: Vec<Word> = vec![];
 
     while remaining_ans.len() > 1 {
-        let guess = suggest(&GUESSES, &remaining_ans, &path);
-        let out = outcome(guess, fixed_answer);
-        reduce_ans(&mut remaining_ans, guess, out);
-        graph.push(path.as_slice(), guess);
+        let guess = match graph.trace(path.as_slice()) {
+            Some(v) => v.to_owned(),
+            None => suggest(&GUESSES, &remaining_ans).to_owned(),
+        };
+        let out = outcome(&guess, fixed_answer);
+        reduce_ans(&mut remaining_ans, &guess, out);
+        graph.push(path.as_slice(), &guess);
+        println!("{}", remaining_ans.len());
     }
     println!(
         "generated answer: {:?}",
