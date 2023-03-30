@@ -3,15 +3,19 @@ mod types;
 mod util;
 mod words;
 
-use crate::node::Node;
-use crate::util::st;
-use crate::words::GUESSES;
+use node::Node;
 use std::time::Instant;
 use types::Word;
+use util::st;
 use util::{outcome, suggest};
+use words::GUESSES;
 
-fn solve(fixed_answer: &Word, mut graph: &mut Node) -> (u32, Word) {
-    let (mut remaining_ans, mut tries) = (words::answers(), 0);
+fn solve(answers: &[&Word], index: usize, mut graph: &mut Node) -> (u32, Word) {
+    let mut remaining_ans = words::build(answers);
+    let mut tries = 0;
+    let mut guesses = vec![];
+
+    let fixed_answer = answers[index];
 
     while remaining_ans.len() > 1 {
         let guess = match graph.guess {
@@ -20,7 +24,7 @@ fn solve(fixed_answer: &Word, mut graph: &mut Node) -> (u32, Word) {
         };
 
         // everytime an outcome is generated, increment the tries by one
-        let out = outcome(&guess, fixed_answer);
+        let out = outcome(&guess, &fixed_answer);
         tries += 1;
 
         // direct hit on correct answer
@@ -33,24 +37,35 @@ fn solve(fixed_answer: &Word, mut graph: &mut Node) -> (u32, Word) {
 
         // save past decisions
         graph = graph.push(guess, out);
+        guesses.push(st(&guess).to_string());
     }
 
     // At this point, remaining_ans should have one left inside
     // This takes one last try to get it
     //
-    // assert!(remaining_ans.len() == 1);
+    debug_assert!(remaining_ans.len() == 1);
     (tries + 1, remaining_ans[0])
 }
 
 fn main() {
-    let all_answers = words::answers();
+    let all_answers = words::ANSWERS;
+    let len = all_answers.len();
     let mut graph = Node::new(None);
     let mut total_tries = 0u32;
 
+    let intervals = 10;
+    let printerval = all_answers.len() / intervals;
+
     let start = Instant::now();
-    for fixed_answer in &all_answers {
-        let (tries, generated_answer) = solve(fixed_answer, &mut graph);
-        assert_eq!(st(fixed_answer), st(&generated_answer));
+    let mut prev = start;
+
+    for i in 0..len {
+        if i % printerval == 0 {
+            println!("{i}/{} ({:?})", all_answers.len(), Instant::elapsed(&prev));
+            prev = Instant::now();
+        }
+        let (tries, generated_answer) = solve(&all_answers, i, &mut graph);
+        debug_assert_eq!(st(all_answers[i]), st(&generated_answer));
         total_tries += tries;
     }
     let avg = total_tries as f64 / all_answers.len() as f64;
