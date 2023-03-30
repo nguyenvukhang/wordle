@@ -1,10 +1,8 @@
-mod ext;
 mod types;
 mod words;
 
-use types::{Outcome, ALPHABET_HASH, ENTROPY_HASH, Word};
-
 use crate::words::{answers::ANSWERS, guesses::GUESSES};
+use types::{Outcome, Word, ALPHABET_HASH, ENTROPY_HASH};
 
 fn entropy(guess: &Word, remaining_ans: &Vec<Word>) -> f64 {
     let mut results = ENTROPY_HASH;
@@ -56,17 +54,41 @@ fn outcome_test() {
     assert_eq!(outcome(b"adieu", b"audio"), 199);
 }
 
-fn main() {
-    let all_answers = words::build(&ANSWERS);
-    let all_guesses = words::build(&GUESSES);
-    let mut best = (b"xxxxx", -1.0);
-    let path: Vec<Word> = vec![];
-    for guess in GUESSES {
-        let entropy = entropy(guess, &all_answers);
+fn suggest<'a>(possible_guesses: &'a [&Word], remaining_ans: &Vec<Word>) -> &'a Word {
+    let mut best = (possible_guesses[0], -1.0);
+    for guess in possible_guesses {
+        let entropy = entropy(guess, &remaining_ans);
         if entropy > best.1 {
             best = (guess, entropy);
         }
     }
-    println!("best guess: {:?}", String::from_utf8_lossy(best.0));
+    best.0
+}
+
+fn reduce_ans(guess: &Word, answers: &Vec<Word>, desired_outcome: Outcome) -> Vec<Word> {
+    answers
+        .iter()
+        .filter(|answer| outcome(guess, answer) == desired_outcome)
+        .map(|v| v.to_owned())
+        .collect()
+}
+
+fn main() {
+    let all_answers = words::build(&ANSWERS);
+    let all_guesses = words::build(&GUESSES);
+    let mut best = (b"xxxxx", -1.0);
+
+    let remaining_ans = all_answers.clone();
+
+    let fixed_answer = b"frame";
+    let path: Vec<Word> = vec![];
+
+    let first_guess = suggest(&GUESSES, &all_answers);
+    let outcome = outcome(first_guess, fixed_answer);
+    let remaining_ans = reduce_ans(first_guess, &remaining_ans, outcome);
+
+    println!("first guess: {:?}", String::from_utf8_lossy(first_guess));
+    println!("outcome: {:?}", outcome);
+    println!("possible remained: {:?}", remaining_ans.len());
     println!("{}", entropy(b"soare", &all_answers));
 }
