@@ -13,13 +13,39 @@ pub fn reduce_ans(answers: &mut Vec<Word>, guess: &Word, out: Outcome) {
 }
 
 struct Node {
-    next: HashMap<Word, Word>,
+    next: HashMap<Word, Node>,
+    guessed: Option<Word>,
 }
 
 impl Node {
-    pub fn new() -> Self {
+    pub fn new(guess: Option<Word>) -> Self {
         Self {
             next: HashMap::new(),
+            guessed: guess,
+        }
+    }
+
+    pub fn trace(&self, path: &[Word]) -> Option<Word> {
+        if path.is_empty() {
+            return self.guessed;
+        }
+        let front = path.first()?;
+        self.next.get(front)?.trace(&path[1..])
+    }
+
+    pub fn push(&mut self, path: &[Word], guess: &Word) {
+        let front = match path.first() {
+            None => {
+                self.guessed = Some(guess.to_owned());
+                return;
+            }
+            Some(v) => v,
+        };
+        match self.next.get_mut(front) {
+            Some(v) => v.push(&path[1..], guess),
+            None => {
+                self.next.insert(*front, Node::new(Some(guess.to_owned())));
+            }
         }
     }
 }
@@ -39,19 +65,34 @@ pub fn suggest<'a>(guesses: &'a [&Word], answers: &Vec<Word>, path: &Vec<Word>) 
 fn main() {
     let all_answers = words::build(&ANSWERS);
     let all_guesses = words::build(&GUESSES);
-    let graph = Node::new();
+    let mut graph = Node::new(None);
 
     let mut remaining_ans = all_answers.clone();
 
     let fixed = b"frame";
     let path: Vec<Word> = vec![];
 
-    let first_guess = suggest(&GUESSES, &all_answers, &path);
-    let outcome = outcome(first_guess, fixed);
-    reduce_ans(&mut remaining_ans, first_guess, outcome);
+    let guess1 = suggest(&GUESSES, &remaining_ans, &path);
+    let out = outcome(guess1, fixed);
+    reduce_ans(&mut remaining_ans, guess1, out);
+    graph.push(path.as_slice(), guess1);
 
-    println!("first guess: {:?}", String::from_utf8_lossy(first_guess));
-    println!("outcome: {:?}", outcome);
+    let guess2 = suggest(&GUESSES, &remaining_ans, &path);
+    let out = outcome(guess2, fixed);
+    reduce_ans(&mut remaining_ans, guess2, out);
+    graph.push(path.as_slice(), guess2);
+
+
+    println!("guess1: {:?}", String::from_utf8_lossy(guess1));
+    println!("guess2: {:?}", String::from_utf8_lossy(guess2));
+    println!(
+        "graph: {:?}",
+        graph
+            .trace(path.as_slice())
+            .as_ref()
+            .map(|v| String::from_utf8_lossy(v))
+    );
+    println!("outcome: {:?}", out);
     println!("possible remained: {:?}", remaining_ans.len());
     println!("{}", entropy(b"soare", &all_answers));
 }
