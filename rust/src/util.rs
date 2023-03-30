@@ -69,3 +69,15 @@ fn entropy_test() {
     test!(b"reast", 5.867738020843562);
     test!(b"reast", 5.867738020843562);
 }
+
+/// suggest a next word to play
+pub fn suggest<'a>(guesses: &'a [&Word], answers: &Vec<Word>) -> &'a Word {
+    let mut best = (guesses[0], -1.0);
+    for guess in guesses {
+        let entropy = entropy(guess, &answers);
+        if entropy > best.1 {
+            best = (guess, entropy);
+        }
+    }
+    best.0
+}

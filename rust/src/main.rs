@@ -8,19 +8,7 @@ use crate::util::st;
 use crate::words::GUESSES;
 use std::time::Instant;
 use types::Word;
-use util::{entropy, outcome};
-
-/// suggest a next word to play
-pub fn suggest<'a>(guesses: &'a [&Word], answers: &Vec<Word>) -> &'a Word {
-    let mut best = (guesses[0], -1.0);
-    for guess in guesses {
-        let entropy = entropy(guess, &answers);
-        if entropy > best.1 {
-            best = (guess, entropy);
-        }
-    }
-    best.0
-}
+use util::{outcome, suggest};
 
 fn solve(fixed_answer: &Word, mut graph: &mut Node) -> (u32, Word) {
     let (mut remaining_ans, mut tries) = (words::answers(), 0);
