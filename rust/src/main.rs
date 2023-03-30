@@ -2,8 +2,25 @@ mod ext;
 mod types;
 mod words;
 
-use ext::String5;
-use types::{Outcome, ALPHABET_HASH};
+use types::{Outcome, ALPHABET_HASH, ENTROPY_HASH};
+
+use crate::words::{answers::ANSWERS, guesses::GUESSES};
+
+fn entropy(guess: &[u8; 5], remaining_ans: &Vec<[u8; 5]>) -> f64 {
+    let mut results = ENTROPY_HASH;
+    for answer in remaining_ans {
+        let outcome = outcome(guess, &answer) as usize;
+        results[outcome] += 1;
+    }
+    let (mut entropy, len) = (0.0, remaining_ans.len() as f64);
+    for i in results {
+        if i > 0 {
+            let i = i as f64;
+            entropy += i / len * (len / i).log2();
+        }
+    }
+    entropy
+}
 
 fn outcome(guess: &[u8; 5], answer: &[u8; 5]) -> Outcome {
     let mut outcome = 0;
@@ -39,4 +56,8 @@ fn outcome_test() {
     assert_eq!(outcome(b"adieu", b"audio"), 199);
 }
 
-fn main() {}
+fn main() {
+    let all_answers = words::build(&ANSWERS);
+    let all_guesses = words::build(&GUESSES);
+    println!("{}", entropy(b"soare", &all_answers));
+}
