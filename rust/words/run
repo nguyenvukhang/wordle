@@ -1,0 +1,7 @@
+#!/bin/sh
+
+rm *.rs
+node generate.js
+rustfmt *.rs
+cp answers.rs ../src/words
+cp guesses.rs ../src/words

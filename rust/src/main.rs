@@ -3,19 +3,14 @@ mod types;
 mod words;
 
 use ext::String5;
-use types::{Arr26, Arr5, Outcome, ALPHABET_HASH};
+use types::{Outcome, ALPHABET_HASH};
 
-fn letter_count(arr: &Arr5) -> Arr26 {
-    let mut result = ALPHABET_HASH;
-    arr.iter().for_each(|v| result[(v % 32) as usize - 1] += 1);
-    result
-}
-
-fn outcome(guess: &str, answer: &str) -> Outcome {
+fn outcome(guess: &[u8; 5], answer: &[u8; 5]) -> Outcome {
     let mut outcome = 0;
-    let guess = guess.to_arr();
-    let answer = answer.to_arr();
-    let mut d_answer = letter_count(&answer);
+    let mut d_answer = ALPHABET_HASH;
+    answer
+        .iter()
+        .for_each(|v| d_answer[(v % 32) as usize - 1] += 1);
     let mut g = [false, false, false, false, false];
     // check greens
     for i in 0..5 {
@@ -38,11 +33,10 @@ fn outcome(guess: &str, answer: &str) -> Outcome {
 
 #[test]
 fn outcome_test() {
-    assert_eq!(outcome("zzzzz", "xxxxx"), 0);
-    assert_eq!(outcome("zzzzz", "zzzzz"), 242);
-    assert_eq!(outcome("eezzz", "zzzee"), 130);
-    assert_eq!(outcome("adieu", "audio"), 199);
+    assert_eq!(outcome(b"zzzzz", b"xxxxx"), 0);
+    assert_eq!(outcome(b"zzzzz", b"zzzzz"), 242);
+    assert_eq!(outcome(b"eezzz", b"zzzee"), 130);
+    assert_eq!(outcome(b"adieu", b"audio"), 199);
 }
 
-fn main() {
-}
+fn main() {}
