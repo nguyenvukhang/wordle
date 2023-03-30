@@ -26,7 +26,7 @@ pub fn suggest<'a>(guesses: &'a [&Word], answers: &Vec<Word>) -> &'a Word {
     best.0
 }
 
-fn solve(fixed_answer: &Word, graph: &mut Node) {
+fn solve(fixed_answer: &Word, mut graph: &mut Node) {
     let mut remaining_ans = words::build(&ANSWERS);
     let mut path: Vec<Word> = vec![];
     let mut limit = 7;
@@ -43,7 +43,7 @@ fn solve(fixed_answer: &Word, graph: &mut Node) {
         let guess = suggest(&GUESSES, &remaining_ans).to_owned();
         let out = outcome(&guess, fixed_answer);
         reduce_ans(&mut remaining_ans, &guess, out);
-        graph.push(path.as_slice(), &guess);
+        graph = graph.push(out, &guess);
         path.push(guess);
         println!(
             "{:?}\n{:?}",
@@ -68,6 +68,7 @@ fn main() {
             "correct answer: {:?}",
             String::from_utf8_lossy(fixed_answer)
         );
+        println!("graph state -> {:?}", graph);
     }
 
     // println!("guess1: {:?}", String::from_utf8_lossy(guess1));

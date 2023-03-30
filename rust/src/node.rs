@@ -1,52 +1,34 @@
+use crate::types::{Outcome, Word};
 use std::collections::HashMap;
 use std::fmt;
 
-use crate::types::Word;
-use crate::util::st;
-
 pub struct Node {
-    next: HashMap<Word, Node>,
-    guessed: Option<Word>,
+    next: HashMap<Outcome, Node>,
+    guess: Option<Word>,
 }
 
 impl Node {
     pub fn new(guess: Option<Word>) -> Self {
-        Self {
-            next: HashMap::new(),
-            guessed: guess,
-        }
+        let next = HashMap::new();
+        Self { guess, next }
     }
 
-    pub fn trace(&self, path: &[Word]) -> Option<Word> {
+    pub fn trace(&self, path: &[(Outcome, Option<Word>)]) -> Option<Word> {
         if path.is_empty() {
-            return self.guessed;
+            return self.guess;
         }
-        let front = path.first()?;
-        self.next.get(front)?.trace(&path[1..])
+        let (outcome, word) = path.first()?;
+        self.next.get(outcome)?.trace(&path[1..])
     }
 
-    pub fn push(&mut self, path: &[Word], guess: &Word) {
-        println!(
-            "PUSHING {:?} <- {:?} ({:?})",
-            self,
-            st(guess),
-            path.iter().map(st).collect::<Vec<_>>()
-        );
-        let front = match path.first() {
-            None => {
-                self.guessed = Some(guess.to_owned());
-                println!("RESULT {:?} <- {:?}", self, st(guess));
-                return;
-            }
-            Some(v) => v,
-        };
-        match self.next.get_mut(front) {
-            Some(v) => v.push(&path[1..], guess),
-            None => {
-                self.next.insert(*front, Node::new(Some(guess.to_owned())));
-            }
+    pub fn push<'a>(&'a mut self, outcome: Outcome, guess: &Word) -> &'a mut Self {
+        let has = self.next.contains_key(&outcome);
+        if !has {
+            let guess = guess.to_owned();
+            let node = Node::new(Some(guess.to_owned()));
+            self.next.insert(outcome, node);
         }
-        println!("RESULT {:?} <- {:?}", self, st(guess));
+        self.next.get_mut(&outcome).unwrap()
     }
 }
 
@@ -54,11 +36,14 @@ impl fmt::Debug for Node {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "Node ({:?}, {:?})",
-            self.guessed.as_ref().map(|v| String::from_utf8_lossy(v)),
+            "Node ({}, {:?})",
+            self.guess
+                .as_ref()
+                .map(|v| String::from_utf8_lossy(v).to_string())
+                .unwrap_or(".".to_string()),
             self.next
                 .iter()
-                .map(|v| String::from_utf8_lossy(v.0))
+                // .map(|(outcome, node)| format!("{outcome} -> {node:?}"))
                 .collect::<Vec<_>>()
         )
     }
