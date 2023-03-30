@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use crate::types::{Outcome, Word, ALPHABET_HASH, ENTROPY_HASH};
+use crate::types::{Outcome, Word};
 
 pub fn st(w: &Word) -> Cow<'_, str> {
     String::from_utf8_lossy(w)
@@ -8,7 +8,7 @@ pub fn st(w: &Word) -> Cow<'_, str> {
 
 /// Generate an outcome from scratch (faster than a HashMap, apparently)
 pub fn outcome(guess: &Word, answer: &Word) -> Outcome {
-    let (mut outcome, mut d, mut g) = (0, ALPHABET_HASH, [false; 5]);
+    let (mut outcome, mut d, mut g) = (0, [0u8; 26], [false; 5]);
     answer.iter().for_each(|v| d[(v % 32) as usize - 1] += 1);
     // check greens
     for i in 0..5 {
@@ -40,7 +40,7 @@ fn outcome_test() {
 /// Calculates the entropy (information stood to gain) of a guess
 /// against a known list of possible answers
 pub fn entropy(guess: &Word, answers: &Vec<Word>) -> f64 {
-    let (mut results, mut entropy, len) = (ENTROPY_HASH, 0.0, answers.len() as f64);
+    let (mut results, mut entropy, len) = ([0; 243], 0.0, answers.len() as f64);
     for answer in answers {
         results[outcome(guess, &answer) as usize] += 1;
     }
@@ -56,7 +56,7 @@ pub fn entropy(guess: &Word, answers: &Vec<Word>) -> f64 {
 #[test]
 fn entropy_test() {
     use crate::words;
-    use crate::words::answers::ANSWERS;
+    use crate::words::ANSWERS;
     let answers = words::build(&ANSWERS);
     macro_rules! test {
         ($word:expr, $val:expr) => {

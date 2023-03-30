@@ -1,5 +1,10 @@
-pub mod answers;
-pub mod guesses;
+use crate::types::Word;
+
+mod answers;
+mod guesses;
+
+pub use answers::ANSWERS;
+pub use guesses::GUESSES;
 
 pub fn build(list: &[&[u8; 5]]) -> Vec<[u8; 5]> {
     list.into_iter()
@@ -9,4 +14,8 @@ pub fn build(list: &[&[u8; 5]]) -> Vec<[u8; 5]> {
             r
         })
         .collect()
+}
+
+pub fn answers() -> Vec<Word> {
+    build(&answers::ANSWERS)
 }
