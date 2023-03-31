@@ -1,10 +1,9 @@
 use crate::types::{Outcome, Word};
 use crate::util::st;
-use std::collections::HashMap;
 use std::fmt;
 
 pub struct Node {
-    next: HashMap<Outcome, Node>,
+    next: Vec<(Outcome, Node)>,
     pub guess: Option<Word>,
 }
 
@@ -12,16 +11,16 @@ impl Node {
     pub fn new(guess: Option<Word>) -> Self {
         Self {
             guess,
-            next: HashMap::new(),
+            next: Vec::new(),
         }
     }
 
     pub fn push(&mut self, guess: Word, outcome: Outcome) -> &mut Self {
         self.guess = Some(guess);
-        if !self.next.contains_key(&outcome) {
-            self.next.insert(outcome, Node::new(None));
+        if self.next.iter().find(|v| v.0 == outcome).is_none() {
+            self.next.push((outcome, Node::new(None)));
         }
-        self.next.get_mut(&outcome).unwrap()
+        &mut self.next.iter_mut().find(|v| v.0 == outcome).unwrap().1
     }
 }
 
