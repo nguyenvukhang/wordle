@@ -1,4 +1,4 @@
-use crate::types::{moutcome, Outcome, Word, GREEN, YELLOW};
+use crate::types::{Outcome, Word, GREEN, YELLOW};
 use std::borrow::Cow;
 
 pub fn st(w: &Word) -> Cow<'_, str> {
@@ -7,24 +7,22 @@ pub fn st(w: &Word) -> Cow<'_, str> {
 
 /// Generate an outcome from scratch (faster than a HashMap, apparently)
 pub fn outcome(guess: &Word, answer: &Word) -> Outcome {
-    let mut outcome = 0;
-    let mut mask = [false; 5];
+    let (mut outcome, mut d, mut g) = (0, [0u8; 26], [false; 5]);
+    answer.iter().for_each(|v| d[(v % 32) as usize - 1] += 1);
     // check greens
     for i in 0..5 {
         if guess[i] == answer[i] {
-            mask[i] = true;
             outcome += GREEN[i];
+            d[(guess[i] % 32) as usize - 1] -= 1;
+            g[i] = true;
         }
     }
-    println!("a -> {}", st(answer));
     // check yellows
-    let r = (0..5).filter(|i| !mask[*i]).collect::<Vec<_>>();
-    for i in &r {
-        for j in &r {
-            if guess[*i] == answer[*j] {
-                outcome += YELLOW[*i];
-                break;
-            }
+    for i in 0..5 {
+        let l = (guess[i] % 32) as usize - 1;
+        if d[l] > 0 && !g[i] {
+            outcome += YELLOW[i];
+            d[l] -= 1;
         }
     }
     outcome
@@ -32,12 +30,24 @@ pub fn outcome(guess: &Word, answer: &Word) -> Outcome {
 
 #[test]
 fn outcome_test() {
-    assert_eq!(outcome(b"zzzzz", b"xxxxx"), moutcome("BBBBB"));
-    assert_eq!(outcome(b"zzzzz", b"zzzzz"), moutcome("GGGGG"));
-    assert_eq!(outcome(b"eezzz", b"zzzee"), moutcome("YYGYY"));
-    assert_eq!(outcome(b"adieu", b"audio"), moutcome("GYYBY"));
-    assert_eq!(outcome(b"crust", b"rebut"), moutcome("BYYBG"));
-    assert_eq!(outcome(b"azzzz", b"zazzz"), moutcome("YYGGG"));
+    use crate::types::outcome_str;
+    macro_rules! test {
+        ($guess:expr, $answer:expr, $expected:ident) => {
+            let out = outcome($guess, $answer);
+            let out = outcome_str(out);
+            let expected = stringify!($expected);
+            assert_eq!(out, expected)
+        };
+    }
+    test!(b"zzzzz", b"xxxxx", BBBBB);
+    test!(b"zzzzz", b"xxxxx", BBBBB);
+    test!(b"zzzzz", b"zzzzz", GGGGG);
+    test!(b"eezzz", b"zzzee", YYGYY);
+    test!(b"adieu", b"audio", GYYBY);
+    test!(b"crust", b"rebut", BYYBG);
+    test!(b"azzzz", b"zazzz", YYGGG);
+    test!(b"azzzz", b"zxxxx", BYBBB);
+    // panic!("yes")
 }
 
 /// Calculates the entropy (information stood to gain) of a guess

@@ -22,3 +22,45 @@ pub fn moutcome(text: &str) -> Outcome {
         _ => a,
     })
 }
+
+#[cfg(test)]
+pub fn outcome_str(num: Outcome) -> String {
+    let mut x = num;
+    let mut res = [b' '; 5];
+    for i in 0..5 {
+        let c = x % 3;
+        match c {
+            2 => res[i] = b'G',
+            1 => res[i] = b'Y',
+            _ => res[i] = b'B',
+        }
+        x /= 3;
+    }
+    res.reverse();
+    String::from_utf8_lossy(&res).to_string()
+}
+
+#[test]
+fn outcome_str_test() {
+    macro_rules! test {
+        ($num:expr, $str:ident) => {
+            assert_eq!(outcome_str($num), stringify!($str));
+        };
+    }
+
+    test!(0, BBBBB);
+
+    test!(1, BBBBY);
+    test!(3, BBBYB);
+    test!(9, BBYBB);
+    test!(27, BYBBB);
+    test!(81, YBBBB);
+
+    test!(2, BBBBG);
+    test!(6, BBBGB);
+    test!(18, BBGBB);
+    test!(54, BGBBB);
+    test!(162, GBBBB);
+
+    test!(69, BGYGB); // 54 + 9 + 6
+}
