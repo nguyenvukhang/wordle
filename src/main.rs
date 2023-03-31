@@ -8,7 +8,6 @@ use std::time::{Duration, Instant};
 use types::Word;
 use util::st;
 use util::{outcome, suggest};
-use words::GUESSES;
 
 struct Wordle {
     guesses: Vec<Word>,
@@ -23,18 +22,17 @@ impl Wordle {
     pub fn solve_one(&self, answer_index: usize, mut graph: &mut Node) -> (u32, Word) {
         let mut remaining_ans = self.answers.clone();
         let mut tries = 0;
-        let mut guesses = vec![];
 
-        let fixed_answer = self.answers[answer_index];
+        let answer = self.answers[answer_index];
 
         while remaining_ans.len() > 1 {
             let guess = match graph.guess {
                 Some(v) => v,
-                None => suggest(&GUESSES, &remaining_ans).to_owned(),
+                None => suggest(&self.guesses, &remaining_ans).to_owned(),
             };
 
             // everytime an outcome is generated, increment the tries by one
-            let out = outcome(&guess, &fixed_answer);
+            let out = outcome(&guess, &answer);
             tries += 1;
 
             // direct hit on correct answer
@@ -43,11 +41,10 @@ impl Wordle {
             }
 
             // shrink answer space
-            remaining_ans.retain(|&answer| outcome(&guess, &answer) == out);
+            remaining_ans.retain(|answer| outcome(&guess, answer) == out);
 
             // save past decisions
             graph = graph.push(guess, out);
-            guesses.push(st(&guess).to_string());
         }
 
         // At this point, remaining_ans should have one left inside

@@ -87,8 +87,8 @@ fn entropy_test() {
 }
 
 /// suggest a next word to play
-pub fn suggest<'a>(guesses: &'a [&Word], answers: &Vec<Word>) -> &'a Word {
-    let mut best = (guesses[0], -1.0);
+pub fn suggest<'a>(guesses: &'a [Word], answers: &Vec<Word>) -> &'a Word {
+    let mut best = (&guesses[0], -1.0);
     for guess in guesses {
         let entropy = entropy(guess, &answers);
         if entropy > best.1 {
