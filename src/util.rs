@@ -1,5 +1,5 @@
 use crate::types::{outcome_str, Outcome, Word, GREEN, YELLOW};
-use std::borrow::Cow;
+use std::{borrow::Cow, collections::HashSet};
 
 pub fn st(w: &Word) -> Cow<'_, str> {
     String::from_utf8_lossy(w)
@@ -9,6 +9,25 @@ macro_rules! letter {
     ($n:expr) => {
         $n as usize % 32 - 1
     };
+}
+
+pub struct CachedOutcome {
+    seen: HashSet<(Word, Word)>,
+}
+
+impl CachedOutcome {
+    pub fn new() -> Self {
+        Self {
+            seen: HashSet::new(),
+        }
+    }
+
+    pub fn outcome(&mut self, guess: &Word, answer: &Word) -> Outcome {
+        if self.seen.insert((*guess, *answer)) {
+            println!("seen! ({}, {})", st(guess), st(answer));
+        }
+        outcome(guess, answer)
+    }
 }
 
 /// Generate an outcome from scratch (faster than a HashMap, apparently)
@@ -90,6 +109,7 @@ fn entropy_test() {
 pub fn suggest(guesses: &[Word], answers: &Vec<Word>) -> Word {
     let n = guesses.len();
     let mut entropies = Vec::with_capacity(n);
+    let mut cache = CachedOutcome::new();
 
     let weights = || (0..n).map(|_| 0).collect::<Vec<usize>>();
 
@@ -103,7 +123,7 @@ pub fn suggest(guesses: &[Word], answers: &Vec<Word>) -> Word {
 
         let mut outcome1_weights = weights();
         for answer in answers {
-            outcome1_weights[outcome(guess1, answer) as usize] += 1;
+            outcome1_weights[cache.outcome(guess1, answer) as usize] += 1;
         }
 
         for outcome1 in 0..243 {
@@ -119,17 +139,17 @@ pub fn suggest(guesses: &[Word], answers: &Vec<Word>) -> Word {
             //
             // guess1 and outcome1 uniquely define this state.
             let mut answers = answers.clone();
-            answers.retain(|ans| outcome(guess1, &ans) == outcome1);
+            answers.retain(|ans| cache.outcome(guess1, &ans) == outcome1);
 
             for guess2 in guesses {
                 if guess1 == guess2 {
                     continue;
                 }
                 let ent2 = entropy(guess2, &answers);
-                if answers.len() == 0 {
-                    println!("\"{}\" -> {}", st(guess1), outcome_str(outcome1));
-                    panic!("no answers possible");
-                }
+                // if answers.len() == 0 {
+                //     println!("\"{}\" -> {}", st(guess1), outcome_str(outcome1));
+                //     panic!("no answers possible");
+                // }
                 total_2nd_ent += ent2 * outcome1_weights[outcome1 as usize] as f64;
             }
             // println!( "{outcome1:>4} {}, guess 2: {}", outcome_str(outcome1), st(best_next.0));
