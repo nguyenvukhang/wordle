@@ -88,33 +88,56 @@ fn entropy_test() {
 
 /// suggest a next word to play
 pub fn suggest(guesses: &[Word], answers: &Vec<Word>) -> Word {
-    let mut best = (&guesses[0], -1.0);
     let n = guesses.len();
     let mut entropies = Vec::with_capacity(n);
-    for guess in guesses {
-        let entropy = entropy(guess, &answers);
-        entropies.push(entropy);
-        if entropy > best.1 {
-            best = (guess, entropy);
+
+    let weights = || (0..n).map(|_| 0).collect::<Vec<usize>>();
+
+    for g1 in 0..n {
+        let guess1 = &guesses[g1];
+        println!("#{} analyzing guess 1: [{}]", g1, st(guess1));
+        // save the entropy of the first guess
+        entropies.push((entropy(guess1, &answers), 0));
+
+        let mut total_2nd_ent = 0.0;
+
+        let mut outcome1_weights = weights();
+        for answer in answers {
+            outcome1_weights[outcome(guess1, answer) as usize] += 1;
         }
-    }
 
-    for out in 0..243 {
-        let mut best_next = (&guesses[0], -1.0);
-
-        // supposed and outcome of `out` occurred.
-        // this will be the state of the answers list
-        let mut answers = answers.clone();
-        answers.retain(|ans| outcome(best.0, &ans) == out);
-
-        for g in 0..n {
-            let ent2 = entropy(&guesses[g], &answers);
-            if ent2 > best_next.1 {
-                best_next = (&guesses[g], ent2);
+        for outcome1 in 0..243 {
+            // this outcome is not possible given the guess.
+            // example: guess is "zzzzz" (which is not a word) and
+            // outcome is GGGGG. No such answer exists.
+            if outcome1_weights[outcome1 as usize] == 0 {
+                continue;
             }
+
+            // suppose the outcome of `out` occurred.
+            // this will be the state of the answers list
+            //
+            // guess1 and outcome1 uniquely define this state.
+            let mut answers = answers.clone();
+            answers.retain(|ans| outcome(guess1, &ans) == outcome1);
+
+            for guess2 in guesses {
+                if guess1 == guess2 {
+                    continue;
+                }
+                let ent2 = entropy(guess2, &answers);
+                if answers.len() == 0 {
+                    println!("\"{}\" -> {}", st(guess1), outcome_str(outcome1));
+                    panic!("no answers possible");
+                }
+                total_2nd_ent += ent2 * outcome1_weights[outcome1 as usize] as f64;
+            }
+            // println!( "{outcome1:>4} {}, guess 2: {}", outcome_str(outcome1), st(best_next.0));
         }
-        println!("{out:>4} {}, next: {}", outcome_str(out), st(best_next.0));
+        total_2nd_ent /= (n * n) as f64;
+        println!("total 2nd: {}", total_2nd_ent);
     }
+
     println!("entropies -> {:?}", entropies.len());
-    *best.0
+    guesses[0]
 }
