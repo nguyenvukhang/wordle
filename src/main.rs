@@ -28,7 +28,7 @@ impl Wordle {
         while remaining_ans.len() > 1 {
             let guess = match graph.guess {
                 Some(v) => v,
-                None => suggest(&self.guesses, &remaining_ans).to_owned(),
+                None => suggest(&self.guesses, &remaining_ans),
             };
 
             // everytime an outcome is generated, increment the tries by one
@@ -59,7 +59,6 @@ impl Wordle {
         let n = self.answers.len();
         let printerval = n / print_count;
         let mut graph = Node::new();
-
         let start = Instant::now();
         let mut prev = start;
 
