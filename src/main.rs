@@ -62,7 +62,7 @@ impl Wordle {
         let start = Instant::now();
         let mut prev = start;
 
-        for i in 0..n {
+        for i in 0..1 {
             if i % printerval == 0 && i > 0 {
                 println!("{i}/{n} ({:?})", Instant::elapsed(&prev));
                 prev = Instant::now();

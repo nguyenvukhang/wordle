@@ -1,4 +1,4 @@
-use crate::types::{Outcome, Word, GREEN, YELLOW};
+use crate::types::{outcome_str, Outcome, Word, GREEN, YELLOW};
 use std::borrow::Cow;
 
 pub fn st(w: &Word) -> Cow<'_, str> {
@@ -89,11 +89,32 @@ fn entropy_test() {
 /// suggest a next word to play
 pub fn suggest(guesses: &[Word], answers: &Vec<Word>) -> Word {
     let mut best = (&guesses[0], -1.0);
+    let n = guesses.len();
+    let mut entropies = Vec::with_capacity(n);
     for guess in guesses {
         let entropy = entropy(guess, &answers);
+        entropies.push(entropy);
         if entropy > best.1 {
             best = (guess, entropy);
         }
     }
+
+    for out in 0..243 {
+        let mut best_next = (&guesses[0], -1.0);
+
+        // supposed and outcome of `out` occurred.
+        // this will be the state of the answers list
+        let mut answers = answers.clone();
+        answers.retain(|ans| outcome(best.0, &ans) == out);
+
+        for g in 0..n {
+            let ent2 = entropy(&guesses[g], &answers);
+            if ent2 > best_next.1 {
+                best_next = (&guesses[g], ent2);
+            }
+        }
+        println!("{out:>4} {}, next: {}", outcome_str(out), st(best_next.0));
+    }
+    println!("entropies -> {:?}", entropies.len());
     *best.0
 }

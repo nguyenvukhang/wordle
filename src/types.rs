@@ -24,7 +24,6 @@ pub fn moutcome(text: &str) -> Outcome {
     })
 }
 
-#[cfg(test)]
 pub fn outcome_str(num: Outcome) -> String {
     let mut x = num;
     let mut res = [b' '; 5];
