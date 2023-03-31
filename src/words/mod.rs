@@ -6,7 +6,7 @@ mod guesses;
 pub use answers::ANSWERS;
 pub use guesses::GUESSES;
 
-pub fn build(list: &[&[u8; 5]]) -> Vec<[u8; 5]> {
+fn build(list: &[&[u8; 5]]) -> Vec<[u8; 5]> {
     list.into_iter().map(|v| *v.to_owned()).collect()
 }
 

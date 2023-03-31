@@ -5,27 +5,29 @@ pub fn st(w: &Word) -> Cow<'_, str> {
     String::from_utf8_lossy(w)
 }
 
-fn letter(n: u8) -> usize {
-    n as usize % 32 - 1
+macro_rules! letter {
+    ($n:expr) => {
+        $n as usize % 32 - 1
+    };
 }
 
 /// Generate an outcome from scratch (faster than a HashMap, apparently)
 pub fn outcome(guess: &Word, answer: &Word) -> Outcome {
-    let (mut outcome, mut d, mut mask) = (0, [0u8; 26], 0u16);
+    let (mut outcome, mut d, mut mask) = (0, [0u8; 26], 0u8);
     // check greens
     for i in 0..5 {
         if guess[i] == answer[i] {
             outcome += GREEN[i];
             mask |= 1 << i;
         } else {
-            d[letter(answer[i])] += 1;
+            d[letter!(answer[i])] += 1;
         }
     }
     // check yellows
     for i in 0..5 {
-        if d[letter(guess[i])] > 0 && mask & (1 << i) == 0 {
+        if d[letter!(guess[i])] > 0 && mask & 1 << i == 0 {
             outcome += YELLOW[i];
-            d[letter(guess[i])] -= 1;
+            d[letter!(guess[i])] -= 1;
         }
     }
     outcome
@@ -50,7 +52,6 @@ fn outcome_test() {
     test!(b"crust", b"rebut", BYYBG);
     test!(b"azzzz", b"zazzz", YYGGG);
     test!(b"azzzz", b"zxxxx", BYBBB);
-    // panic!("yes")
 }
 
 /// Calculates the entropy (information stood to gain) of a guess
@@ -63,7 +64,7 @@ pub fn entropy(guess: &Word, answers: &Vec<Word>) -> f64 {
     for f in freq {
         if f > 0 {
             let f = f as f64;
-            entropy += f / len * (len / f).log2();
+            entropy += (f / len) * (len / f).log2();
         }
     }
     entropy
@@ -72,8 +73,7 @@ pub fn entropy(guess: &Word, answers: &Vec<Word>) -> f64 {
 #[test]
 fn entropy_test() {
     use crate::words;
-    use crate::words::ANSWERS;
-    let answers = words::build(&ANSWERS);
+    let answers = words::answers();
     macro_rules! test {
         ($word:expr, $val:expr) => {
             assert_eq!(entropy($word, &answers), $val)

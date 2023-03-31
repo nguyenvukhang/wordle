@@ -14,6 +14,7 @@ pub const GREEN: [u8; 5] = [162, 54, 18, 6, 2];
 pub type Word = [u8; 5];
 
 #[cfg(test)]
+#[allow(unused)]
 pub fn moutcome(text: &str) -> Outcome {
     let text = text.as_bytes();
     (0..5).fold(0, |a, i| match text[i] {
