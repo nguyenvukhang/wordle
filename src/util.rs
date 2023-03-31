@@ -1,6 +1,5 @@
+use crate::types::{moutcome, Outcome, Word, GREEN, YELLOW};
 use std::borrow::Cow;
-
-use crate::types::{Outcome, Word};
 
 pub fn st(w: &Word) -> Cow<'_, str> {
     String::from_utf8_lossy(w)
@@ -8,22 +7,24 @@ pub fn st(w: &Word) -> Cow<'_, str> {
 
 /// Generate an outcome from scratch (faster than a HashMap, apparently)
 pub fn outcome(guess: &Word, answer: &Word) -> Outcome {
-    let (mut outcome, mut d, mut g) = (0, [0u8; 26], [false; 5]);
-    answer.iter().for_each(|v| d[(v % 32) as usize - 1] += 1);
+    let mut outcome = 0;
+    let mut mask = [false; 5];
     // check greens
     for i in 0..5 {
         if guess[i] == answer[i] {
-            outcome += 3u8.pow(4 - i as u32) * 2;
-            d[(guess[i] % 32) as usize - 1] -= 1;
-            g[i] = true;
+            mask[i] = true;
+            outcome += GREEN[i];
         }
     }
+    println!("a -> {}", st(answer));
     // check yellows
-    for i in 0..5 {
-        let l = (guess[i] % 32) as usize - 1;
-        if d[l] > 0 && !g[i] {
-            outcome += 3u8.pow(4 - i as u32);
-            d[l] -= 1;
+    let r = (0..5).filter(|i| !mask[*i]).collect::<Vec<_>>();
+    for i in &r {
+        for j in &r {
+            if guess[*i] == answer[*j] {
+                outcome += YELLOW[*i];
+                break;
+            }
         }
     }
     outcome
@@ -31,11 +32,12 @@ pub fn outcome(guess: &Word, answer: &Word) -> Outcome {
 
 #[test]
 fn outcome_test() {
-    assert_eq!(outcome(b"zzzzz", b"xxxxx"), 0);
-    assert_eq!(outcome(b"zzzzz", b"zzzzz"), 242);
-    assert_eq!(outcome(b"eezzz", b"zzzee"), 130);
-    assert_eq!(outcome(b"adieu", b"audio"), 199);
-    assert_eq!(outcome(b"crust", b"rebut"), 38);
+    assert_eq!(outcome(b"zzzzz", b"xxxxx"), moutcome("BBBBB"));
+    assert_eq!(outcome(b"zzzzz", b"zzzzz"), moutcome("GGGGG"));
+    assert_eq!(outcome(b"eezzz", b"zzzee"), moutcome("YYGYY"));
+    assert_eq!(outcome(b"adieu", b"audio"), moutcome("GYYBY"));
+    assert_eq!(outcome(b"crust", b"rebut"), moutcome("BYYBG"));
+    assert_eq!(outcome(b"azzzz", b"zazzz"), moutcome("YYGGG"));
 }
 
 /// Calculates the entropy (information stood to gain) of a guess

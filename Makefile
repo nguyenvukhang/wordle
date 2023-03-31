@@ -1,3 +1,6 @@
+debug:
+	cargo test outcome_test
+
 main:
 	make dev
 
