@@ -17,10 +17,14 @@ impl Node {
 
     pub fn push(&mut self, guess: Word, outcome: Outcome) -> &mut Self {
         self.guess = Some(guess);
-        if let None = self.next.iter().position(|v| v.0 == outcome) {
-            self.next.push((outcome, Node::new()));
-        }
-        &mut self.next.iter_mut().find(|v| v.0 == outcome).unwrap().1
+        let pos = match self.next.iter().position(|v| v.0 == outcome) {
+            None => {
+                self.next.push((outcome, Node::new()));
+                self.next.len() - 1
+            }
+            Some(v) => v,
+        };
+        &mut self.next[pos].1
     }
 }
 

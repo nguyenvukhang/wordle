@@ -33,7 +33,7 @@ fn solve(answers: &[&Word], index: usize, mut graph: &mut Node) -> (u32, Word) {
         }
 
         // shrink answer space
-        remaining_ans.retain(|answer| outcome(&guess, answer) == out);
+        remaining_ans.retain(|&answer| outcome(&guess, &answer) == out);
 
         // save past decisions
         graph = graph.push(guess, out);
