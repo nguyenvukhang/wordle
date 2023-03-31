@@ -5,33 +5,27 @@ pub fn st(w: &Word) -> Cow<'_, str> {
     String::from_utf8_lossy(w)
 }
 
-trait Letter {
-    fn letter(&self) -> usize;
-}
-
-impl Letter for u8 {
-    fn letter(&self) -> usize {
-        *self as usize % 32 - 1
-    }
+fn letter(n: u8) -> usize {
+    n as usize % 32 - 1
 }
 
 /// Generate an outcome from scratch (faster than a HashMap, apparently)
 pub fn outcome(guess: &Word, answer: &Word) -> Outcome {
-    let (mut outcome, mut d, mut g) = (0, [0u8; 26], [false; 5]);
+    let (mut outcome, mut d, mut mask) = (0, [0u8; 26], 0u16);
     // check greens
     for i in 0..5 {
         if guess[i] == answer[i] {
             outcome += GREEN[i];
-            g[i] = true;
+            mask |= 1 << i;
         } else {
-            d[answer[i].letter()] += 1;
+            d[letter(answer[i])] += 1;
         }
     }
     // check yellows
     for i in 0..5 {
-        if d[guess[i].letter()] > 0 && !g[i] {
+        if d[letter(guess[i])] > 0 && mask & (1 << i) == 0 {
             outcome += YELLOW[i];
-            d[guess[i].letter()] -= 1;
+            d[letter(guess[i])] -= 1;
         }
     }
     outcome
