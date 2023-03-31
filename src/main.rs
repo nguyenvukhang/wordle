@@ -50,7 +50,7 @@ fn solve(answers: &[&Word], index: usize, mut graph: &mut Node) -> (u32, Word) {
 fn main() {
     let all_answers = words::ANSWERS;
     let len = all_answers.len();
-    let mut graph = Node::new(None);
+    let mut graph = Node::new();
     let mut total_tries = 0u32;
 
     let intervals = 10;

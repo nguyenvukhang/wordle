@@ -8,17 +8,17 @@ pub struct Node {
 }
 
 impl Node {
-    pub fn new(guess: Option<Word>) -> Self {
+    pub fn new() -> Self {
         Self {
-            guess,
+            guess: None,
             next: Vec::new(),
         }
     }
 
     pub fn push(&mut self, guess: Word, outcome: Outcome) -> &mut Self {
         self.guess = Some(guess);
-        if self.next.iter().find(|v| v.0 == outcome).is_none() {
-            self.next.push((outcome, Node::new(None)));
+        if let None = self.next.iter().position(|v| v.0 == outcome) {
+            self.next.push((outcome, Node::new()));
         }
         &mut self.next.iter_mut().find(|v| v.0 == outcome).unwrap().1
     }
