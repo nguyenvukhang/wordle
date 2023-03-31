@@ -18,13 +18,13 @@ impl Letter for u8 {
 /// Generate an outcome from scratch (faster than a HashMap, apparently)
 pub fn outcome(guess: &Word, answer: &Word) -> Outcome {
     let (mut outcome, mut d, mut g) = (0, [0u8; 26], [false; 5]);
-    answer.iter().for_each(|v| d[v.letter()] += 1);
     // check greens
     for i in 0..5 {
         if guess[i] == answer[i] {
             outcome += GREEN[i];
-            d[guess[i].letter()] -= 1;
             g[i] = true;
+        } else {
+            d[answer[i].letter()] += 1;
         }
     }
     // check yellows
