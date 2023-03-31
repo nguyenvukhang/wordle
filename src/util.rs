@@ -1,5 +1,5 @@
-use crate::types::{outcome_str, Outcome, Word, GREEN, YELLOW};
-use std::{borrow::Cow, collections::HashSet};
+use crate::types::{Outcome, Word, GREEN, YELLOW};
+use std::{borrow::Cow, collections::HashMap};
 
 pub fn st(w: &Word) -> Cow<'_, str> {
     String::from_utf8_lossy(w)
@@ -11,22 +11,59 @@ macro_rules! letter {
     };
 }
 
+fn word_to_num(w: &Word) -> u32 {
+    let (mut res, mut base) = (0, 1);
+    for i in 0..5 {
+        res += base * (w[4 - i] as u32 % 32);
+        base *= 26;
+    }
+    res
+}
+
+#[test]
+fn word_to_num_test() {
+    let e = [456976, 17576, 676, 26, 1];
+    macro_rules! gen {
+        ($a:expr, $b:expr, $c:expr, $d:expr, $e:expr) => {
+            $a * e[0] + $b * e[1] + $c * e[2] + $d * e[3] + $e * e[4]
+        };
+    }
+    assert_eq!(word_to_num(b"hello"), gen!(8, 5, 12, 12, 15));
+}
+
 pub struct CachedOutcome {
-    seen: HashSet<(Word, Word)>,
+    seen: HashMap<Vec<u32>, f64>,
+    count: usize,
 }
 
 impl CachedOutcome {
     pub fn new() -> Self {
         Self {
-            seen: HashSet::new(),
+            seen: HashMap::new(),
+            count: 0,
         }
     }
 
     pub fn outcome(&mut self, guess: &Word, answer: &Word) -> Outcome {
-        if self.seen.insert((*guess, *answer)) {
-            println!("seen! ({}, {})", st(guess), st(answer));
-        }
+        // if self.seen.insert((*guess, *answer)) {
+        //     println!("seen! ({}, {})", st(guess), st(answer));
+        // }
         outcome(guess, answer)
+    }
+
+    pub fn entropy(&mut self, guess: &Word, answers: &Vec<Word>) -> f64 {
+        let mut key = Vec::with_capacity(answers.len() + 1);
+        key.push(word_to_num(guess));
+        key.extend(answers.iter().map(word_to_num));
+        if let Some(v) = self.seen.get(&key) {
+            if answers.len() > 10 {
+                println!("cached! {}", answers.len());
+            }
+            return *v;
+        }
+        let ent = entropy(guess, answers);
+        self.seen.insert(key, ent);
+        ent
     }
 }
 
@@ -117,7 +154,7 @@ pub fn suggest(guesses: &[Word], answers: &Vec<Word>) -> Word {
         let guess1 = &guesses[g1];
         println!("#{} analyzing guess 1: [{}]", g1, st(guess1));
         // save the entropy of the first guess
-        entropies.push((entropy(guess1, &answers), 0));
+        entropies.push((cache.entropy(guess1, &answers), 0));
 
         let mut total_2nd_ent = 0.0;
 
@@ -145,7 +182,7 @@ pub fn suggest(guesses: &[Word], answers: &Vec<Word>) -> Word {
                 if guess1 == guess2 {
                     continue;
                 }
-                let ent2 = entropy(guess2, &answers);
+                let ent2 = cache.entropy(guess2, &answers);
                 // if answers.len() == 0 {
                 //     println!("\"{}\" -> {}", st(guess1), outcome_str(outcome1));
                 //     panic!("no answers possible");
