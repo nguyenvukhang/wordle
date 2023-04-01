@@ -10,5 +10,6 @@ mod words;
 use crate::solver::Solver;
 
 fn main() {
-    Solver::demo();
+    Solver::demo_two_up();
+    // Solver::demo();
 }

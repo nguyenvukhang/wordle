@@ -1,4 +1,10 @@
-use crate::{matrix::Matrix, node::Node, types::Word, words};
+use crate::{
+    matrix::Matrix,
+    node::Node,
+    types::Word,
+    util::st,
+    words::{self, GUESSES},
+};
 use std::time::{Duration, Instant};
 
 pub struct Solver {
@@ -65,11 +71,29 @@ impl Solver {
         (total_tries as f64 / n as f64, Instant::elapsed(&start))
     }
 
+    pub fn bench_two_up(&mut self) {
+        let word = "evade";
+        let i = GUESSES
+            .iter()
+            .position(|v| v == &word.as_bytes())
+            .unwrap_or(0);
+        let remaining_ans = self.matrix.fresh_answer_set();
+        let entropy = self.matrix.entropy2(i, &remaining_ans);
+        let word = st(GUESSES[i]);
+        println!("calculated 2-up entropy of `{word}` is:");
+        println!("{}", entropy);
+    }
+
     #[allow(unused)]
     pub fn demo() {
         let mut solver = Solver::new(&words::guesses(), &words::answers());
         let (avg_tries, time) = solver.bench(10);
         println!("time elapsed: {:?}", time);
         println!("avg tries: {avg_tries}")
+    }
+
+    pub fn demo_two_up() {
+        let mut solver = Solver::new(&words::guesses(), &words::answers());
+        solver.bench_two_up();
     }
 }

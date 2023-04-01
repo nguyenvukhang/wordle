@@ -1,5 +1,3 @@
-use std::time::Instant;
-
 use crate::types::{Outcome, Word};
 use crate::util::outcome;
 
@@ -74,13 +72,22 @@ impl Matrix {
         a.into_iter().filter(|&a| self.outcome(g, a) == o).collect()
     }
 
+    /// Fixing a guess and answer list, calculate the average entropy gained
+    /// from picking the best next guess given any outcome.
+    ///
+    /// Incoming state:
+    ///   history: (start) -> "soare"
+    ///   answer list: full
+    ///
+    /// Processing:
+    ///   if outcome is BBBBB, guess ''
+    ///
     pub fn entropy2(&mut self, guess: usize, answers: &Vec<usize>) -> f64 {
-        let start = Instant::now();
         let (g1, n) = (guess, self.guess_count());
         let out_freq = self.out_freq(g1, answers);
         let mut entropy2 = 0.0;
 
-        for o1 in 0..243 {
+        for o1 in 0..1 {
             // `guess` will never lead to this outcome.
             // example: guess is "iiiii" gives outcome GGGGG.
             if out_freq[o1] == 0 {
@@ -88,24 +95,15 @@ impl Matrix {
             }
 
             // `guess` + outcome `o1` -> results in this answer list
-            let answers = self.shrink(g1, o1 as Outcome, answers);
-
-            let mut all_freqs: [usize; 1024] = [0; 1024];
+            let _ = self.shrink(g1, o1 as Outcome, answers);
 
             for g2 in 0..n {
                 if g1 == g2 {
                     continue;
                 }
-                let mut freq = [0; 243];
-                for a in &answers {
-                    freq[self.outcome(g2, *a) as usize] += 1;
-                }
-                freq.into_iter().for_each(|f| all_freqs[f] += 1);
             }
         }
         entropy2 /= (n * n) as f64;
-        println!("{g1} -> 2nd: {}", entropy2);
-        println!("elapsed: {:?}", Instant::elapsed(&start) * n as u32);
         entropy2
     }
 }
