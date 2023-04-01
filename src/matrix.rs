@@ -40,16 +40,14 @@ impl Matrix {
 
     /// Runs in O(AG) time
     /// Caculcates entropy of each guess. Entropy runs in O(A) time.
+    ///
+    /// Precondition: `answers` must NOT be empty
     pub fn suggest(&mut self, answers: &Vec<usize>) -> (usize, f64) {
-        if answers.len() == 0 {
+        if answers.len() == 1 {
             return (answers[0], 0.0);
         }
-        if answers.len() == 1 {
-            return (answers[0], 1.0);
-        }
         let mut best = (0, -1.0);
-        let guess_count = self.guess_count();
-        for guess in 0..guess_count {
+        for guess in 0..self.guess_count() {
             let entropy = self.entropy(guess, answers);
             if entropy > best.1 {
                 best = (guess, entropy);

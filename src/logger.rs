@@ -1,4 +1,4 @@
-use log::{Level, LevelFilter, Metadata, Record, SetLoggerError};
+use log::{Level, LevelFilter, Metadata, Record};
 
 struct SimpleLogger;
 
@@ -16,6 +16,21 @@ impl log::Log for SimpleLogger {
     fn flush(&self) {}
 }
 
-pub fn init() -> Result<(), SetLoggerError> {
-    log::set_logger(&SimpleLogger).map(|()| log::set_max_level(LevelFilter::Info))
+fn init(level: LevelFilter) {
+    log::set_logger(&SimpleLogger)
+        .map(|()| log::set_max_level(level))
+        .unwrap();
 }
+
+macro_rules! make {
+    ($f:ident, $en:ident) => {
+        #[allow(unused)]
+        pub fn $f() {
+            init(LevelFilter::$en);
+        }
+    };
+}
+
+make!(info, Info);
+make!(debug, Debug);
+make!(error, Error);
