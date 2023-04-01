@@ -7,12 +7,6 @@ pub struct Matrix {
     db: Vec<Vec<Outcome>>,
 }
 
-fn vec<F: Fn(usize) -> T, T>(len: usize, f: F) -> Vec<T> {
-    let mut vec = Vec::with_capacity(len);
-    (0..len).for_each(|i| vec.push(f(i)));
-    vec
-}
-
 impl Matrix {
     pub fn new(answers: &Vec<Word>, guesses: &Vec<Word>) -> Self {
         Self {
@@ -62,11 +56,15 @@ impl Matrix {
     }
 
     pub fn fresh_answer_set(&self) -> Vec<usize> {
-        vec(self.answer_count(), |i| i)
+        (0..self.answer_count()).collect()
     }
 
     fn out_freq(&self, guess: usize, answers: &Vec<usize>) -> Vec<usize> {
-        let (mut v, g, a) = (vec(243, |_| 0), guess, answers.iter());
+        let (mut v, g, a) = (
+            (0..243).map(|_| 0).collect::<Vec<_>>(),
+            guess,
+            answers.iter(),
+        );
         a.for_each(|a| v[self.outcome(g, *a) as usize] += 1);
         v
     }
