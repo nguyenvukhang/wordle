@@ -1,11 +1,5 @@
+use crate::{matrix::Matrix, node::Node, types::Word, words};
 use std::time::{Duration, Instant};
-
-use crate::{
-    matrix::Matrix,
-    node::Node,
-    types::Word,
-    words::{self, GUESSES},
-};
 
 pub struct Solver {
     matrix: Matrix,
@@ -71,9 +65,10 @@ impl Solver {
         (total_tries as f64 / n as f64, Instant::elapsed(&start))
     }
 
+    #[allow(unused)]
     pub fn demo() {
-        let mut wordle = Solver::new(&words::guesses(), &words::answers());
-        let (avg_tries, time) = wordle.bench(10);
+        let mut solver = Solver::new(&words::guesses(), &words::answers());
+        let (avg_tries, time) = solver.bench(10);
         println!("time elapsed: {:?}", time);
         println!("avg tries: {avg_tries}")
     }

@@ -1,10 +1,4 @@
 use crate::types::{Outcome, Word, GREEN, YELLOW};
-use std::{borrow::Cow, time::Instant};
-
-#[allow(unused)]
-pub fn st(w: &Word) -> Cow<'_, str> {
-    String::from_utf8_lossy(w)
-}
 
 macro_rules! letter {
     ($n:expr) => {
@@ -53,11 +47,4 @@ fn outcome_test() {
     test!(b"crust", b"rebut", BYYBG);
     test!(b"azzzz", b"zazzz", YYGGG);
     test!(b"azzzz", b"zxxxx", BYBBB);
-}
-
-pub fn bench<F: Fn() -> ()>(title: &str, f: F) {
-    let start = Instant::now();
-    f();
-    let elapsed = Instant::elapsed(&start);
-    println!("[{title}] runtime: {:?}", elapsed);
 }
