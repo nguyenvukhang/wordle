@@ -3,7 +3,7 @@ use crate::{
     node::Node,
     types::Word,
     util::st,
-    words::{self, GUESSES},
+    words::{self, find_guess},
 };
 use std::time::{Duration, Instant};
 
@@ -72,16 +72,15 @@ impl Solver {
     }
 
     pub fn bench_two_up(&mut self) {
-        let word = "evade";
-        let i = GUESSES
-            .iter()
-            .position(|v| v == &word.as_bytes())
-            .unwrap_or(0);
+        let word = "debug";
+        let i = find_guess(word).unwrap_or(0);
         let remaining_ans = self.matrix.fresh_answer_set();
         let entropy = self.matrix.entropy2(i, &remaining_ans);
-        let word = st(GUESSES[i]);
         println!("calculated 2-up entropy of `{word}` is:");
         println!("{}", entropy);
+
+        let mut graph = Node::new();
+        self.solve_one(i, &mut graph);
     }
 
     #[allow(unused)]
