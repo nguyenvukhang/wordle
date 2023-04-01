@@ -22,6 +22,8 @@ impl Matrix {
         self.db[answer][guess]
     }
 
+    /// Runs in O(A) time.
+    /// Matches one guess against all answers.
     pub fn entropy(&mut self, guess: usize, answers: &Vec<usize>) -> f64 {
         let (mut freq, mut ent, n) = ([0; 243], 0.0, answers.len() as f64);
         for answer in answers {
@@ -36,6 +38,8 @@ impl Matrix {
         ent
     }
 
+    /// Runs in O(AG) time
+    /// Caculcates entropy of each guess. Entropy runs in O(A) time.
     pub fn suggest(&mut self, answers: &Vec<usize>) -> (usize, f64) {
         if answers.len() == 0 {
             return (answers[0], 0.0);
