@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use crate::types::{Outcome, Word};
 use crate::util::outcome;
 use crate::words::{display_guess, find_guess, get_guess};
@@ -35,6 +37,12 @@ impl Matrix {
     }
 
     pub fn suggest(&mut self, answers: &Vec<usize>) -> (usize, f64) {
+        if answers.len() == 0 {
+            return (answers[0], 0.0);
+        }
+        if answers.len() == 1 {
+            return (answers[0], 1.0);
+        }
         let mut best = (0, -1.0);
         let guess_count = self.guess_count();
         for guess in 0..guess_count {
@@ -43,7 +51,7 @@ impl Matrix {
                 best = (guess, entropy);
             }
         }
-        log::info!("{} @ {:.8}", display_guess(best.0), best.1);
+        log::debug!("{} @ {:.8}", display_guess(best.0), best.1);
         best
     }
 
@@ -102,5 +110,33 @@ impl Matrix {
             entropy2 += self.suggest(&answers).1;
         }
         entropy2 / 243 as f64
+    }
+
+    pub fn suggest2(&mut self, answers: &Vec<usize>) -> (usize, f64) {
+        let mut best = (0, -1.0);
+        let guess_count = self.guess_count();
+        let start = Instant::now();
+
+        let print_count = 50;
+        let printerval = guess_count / print_count;
+
+        for g1 in 0..guess_count {
+            let e1 = self.entropy(g1, answers);
+            let e2 = self.entropy2(g1, answers);
+            let entropy = e1 + e2;
+            if entropy > best.1 {
+                best = (g1, entropy);
+                log::info!("{} @ {:.8}", display_guess(best.0), best.1);
+            }
+            if g1 % printerval == 0 {
+                let elapsed = Instant::elapsed(&start);
+                let avg = elapsed / (g1 + 1) as u32;
+                let rem = avg * (guess_count - g1 + 1) as u32;
+                println!("{g1}/{guess_count}");
+                println!("{:?} | {:?}", avg, rem);
+            }
+        }
+        log::info!("{} @ {:.8}", display_guess(best.0), best.1);
+        best
     }
 }

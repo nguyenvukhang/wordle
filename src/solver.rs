@@ -2,7 +2,7 @@ use crate::{
     matrix::Matrix,
     node::Node,
     types::{outcome_str, Word},
-    words::{self, find_guess},
+    words::{self, display_guess, find_guess},
 };
 use std::time::{Duration, Instant};
 
@@ -72,11 +72,20 @@ impl Solver {
     }
 
     pub fn bench_two_up(&mut self) {
-        let word = "debug";
-        let i = find_guess(word).unwrap_or(0);
-        let remaining_ans = self.matrix.fresh_answer_set();
-        let entropy = self.matrix.entropy2(i, &remaining_ans);
-        println!("calculated 2-up entropy of `{word}` is:");
+        let mut remaining_ans = self.matrix.fresh_answer_set();
+
+        // simulate a 2nd-level 2-up scan for a faster result
+        // if ans = 69, 2-up and 1-up scan results in the same suggest:
+        // cloot (4.451146891896381 for 1-up)
+        // cloot (4.574220515746622 for 2-up)
+        let ans = 69;
+        let (g1, _) = self.matrix.suggest(&remaining_ans);
+        let out = self.matrix.outcome(g1, ans);
+
+        remaining_ans.retain(|a| self.matrix.outcome(g1, *a) == out);
+
+        let (guess, entropy) = self.matrix.suggest2(&remaining_ans);
+        println!("should guess `{}`", display_guess(guess));
         println!("{}", entropy);
     }
 
