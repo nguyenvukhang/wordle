@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::time::Instant;
 
 use crate::types::{outcome_str, Outcome, Word};
 use crate::util::{outcome, st};
@@ -99,6 +100,7 @@ impl Matrix {
     }
 
     pub fn entropy2(&mut self, guess: usize, answers: &Vec<usize>) -> f64 {
+        let start = Instant::now();
         let (g1, n) = (guess, self.guess_count());
         let out_freq = self.out_freq(g1, answers);
         let mut entropy2 = 0.0;
@@ -128,56 +130,11 @@ impl Matrix {
         }
         entropy2 /= (n * n) as f64;
         println!("{g1} -> 2nd: {}", entropy2);
+        println!("elapsed: {:?}", Instant::elapsed(&start) * n as u32);
         entropy2
     }
 
-    pub fn probe_next(&mut self, guess: usize, answers: &Vec<usize>) {
-        let g1 = guess;
-        let n = self.guess_count();
-        let mut total_2nd_ent = 0.0;
-        let mut outcome1_freq = vec(243, |_| 0);
-        for answer in answers {
-            outcome1_freq[self.outcome(g1, *answer) as usize] += 1;
-        }
-        for o1 in 0..243 {
-            // this outcome is not possible given the guess.
-            // example: guess is "zzzzz" (which is not a word) and
-            // outcome is GGGGG. No such answer exists.
-            if outcome1_freq[o1 as usize] == 0 {
-                continue;
-            }
-
-            // suppose the outcome of `out` occurred.
-            // this will be the state of the answers list
-            //
-            // guess1 and outcome1 uniquely define this state.
-            let mut answers = answers.clone();
-            answers.retain(|ans| self.outcome(g1, *ans) == o1);
-
-            // THIS is the bottleneck
-            // n = 13,000 so it gets really expensive at this level
-            for g2 in 0..n {
-                if g1 == g2 {
-                    continue;
-                }
-                let ent2 = self.entropy(g2, &answers);
-                total_2nd_ent += ent2 * outcome1_freq[o1 as usize] as f64;
-            }
-        }
-        total_2nd_ent /= (n * n) as f64;
-        println!("{g1} -> 2nd: {}", total_2nd_ent);
-    }
-
     pub fn suggest(&mut self, answers: &Vec<usize>) -> usize {
-        let n = self.guess_count();
-
-        // List of (f64, f64), entropies of first and second guess
-        let mut entropies = Vec::with_capacity(n);
-        (0..n).for_each(|g1| entropies.push((self.entropy(g1, answers), 0.0)));
-
-        for g1 in 0..n {
-            self.probe_next(g1, answers);
-        }
         0
     }
 
