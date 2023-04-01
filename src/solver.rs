@@ -2,7 +2,7 @@ use crate::{
     matrix::Matrix,
     node::Node,
     types::{outcome_str, Word},
-    words::{self, display_guess, find_guess},
+    words::{self, display_guess},
 };
 use std::time::{Duration, Instant};
 

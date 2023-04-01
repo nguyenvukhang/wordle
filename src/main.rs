@@ -1,4 +1,3 @@
-mod entropy;
 mod logger;
 mod matrix;
 mod node;

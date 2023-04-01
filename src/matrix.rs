@@ -2,7 +2,7 @@ use std::time::Instant;
 
 use crate::types::{Outcome, Word};
 use crate::util::outcome;
-use crate::words::{display_guess, find_guess, get_guess};
+use crate::words::display_guess;
 
 pub struct Matrix {
     db: Vec<Vec<Outcome>>,
