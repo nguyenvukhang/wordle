@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::time::Instant;
 
 use crate::entropy::Entropy;
@@ -49,10 +48,11 @@ impl Matrix {
             freq[self.outcome(guess, *answer) as usize] += 1;
         }
         let mut entropy = 0.0;
-        let n = answers.len();
+        let n = answers.len() as f64;
         for f in freq {
             if f > 0 {
-                entropy += self.entropy.get(f, n);
+                let f = f as f64;
+                entropy += (f / n) * (n / f).log2();
             }
         }
         entropy
@@ -115,7 +115,7 @@ impl Matrix {
         entropy2
     }
 
-    pub fn suggest(&self, answers: &Vec<usize>) -> usize {
+    pub fn suggest(&mut self, answers: &Vec<usize>) -> usize {
         let mut best = (0, -1.0);
         let guess_count = self.guess_count();
         for guess in 0..guess_count {

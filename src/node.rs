@@ -29,7 +29,6 @@ impl Node {
 
 impl fmt::Debug for Node {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let g = self.guess.as_ref();
         write!(f, "Node ({:?}, {:?})", self.guess, self.next)
     }
 }

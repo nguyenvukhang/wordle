@@ -1,5 +1,5 @@
 use crate::types::{Outcome, Word, GREEN, YELLOW};
-use std::borrow::Cow;
+use std::{borrow::Cow, time::Instant};
 
 pub fn st(w: &Word) -> Cow<'_, str> {
     String::from_utf8_lossy(w)
@@ -86,14 +86,9 @@ fn entropy_test() {
     test!(b"reast", 5.867738020843562);
 }
 
-/// suggest a next word to play
-pub fn suggest(guesses: &[Word], answers: &Vec<Word>) -> Word {
-    let mut best = (&guesses[0], -1.0);
-    for guess in guesses {
-        let entropy = entropy(guess, &answers);
-        if entropy > best.1 {
-            best = (guess, entropy);
-        }
-    }
-    *best.0
+pub fn bench<F: Fn() -> ()>(title: &str, f: F) {
+    let start = Instant::now();
+    f();
+    let elapsed = Instant::elapsed(&start);
+    println!("[{title}] runtime: {:?}", elapsed);
 }
