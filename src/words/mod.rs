@@ -20,14 +20,18 @@ pub fn guesses() -> Vec<Word> {
     build(&guesses::GUESSES)
 }
 
-#[allow(unused)]
-pub fn get_guess(i: usize) -> Option<Word> {
-    GUESSES.get(i).map(|v| **v)
+fn st(w: &Word) -> String {
+    String::from_utf8_lossy(w).to_string()
 }
 
 #[allow(unused)]
-pub fn get_answer(i: usize) -> Option<Word> {
-    ANSWERS.get(i).map(|v| **v)
+pub fn get_guess(i: usize) -> Option<String> {
+    GUESSES.get(i).map(|v| st(*v))
+}
+
+#[allow(unused)]
+pub fn get_answer(i: usize) -> Option<String> {
+    ANSWERS.get(i).map(|v| st(*v))
 }
 
 #[allow(unused)]

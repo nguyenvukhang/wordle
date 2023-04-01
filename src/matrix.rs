@@ -1,5 +1,6 @@
 use crate::types::{Outcome, Word};
 use crate::util::outcome;
+use crate::words::{find_guess, get_guess};
 
 pub struct Matrix {
     db: Vec<Vec<Outcome>>,
@@ -42,6 +43,11 @@ impl Matrix {
                 best = (guess, entropy);
             }
         }
+        log::info!(
+            "`{}` @ {}",
+            get_guess(best.0).unwrap_or("".to_string()),
+            best.1
+        );
         best.0
     }
 
@@ -80,7 +86,10 @@ impl Matrix {
     ///   answer list: full
     ///
     /// Processing:
-    ///   if outcome is BBBBB, guess ''
+    ///   if outcome is BBBBY, guess 'denet'
+    ///   if outcome is BYYBG, guess 'bundt'
+    ///   if outcome is BBBYG, guess 'pudic'
+    ///   ...
     ///
     pub fn entropy2(&mut self, guess: usize, answers: &Vec<usize>) -> f64 {
         let (g1, n) = (guess, self.guess_count());

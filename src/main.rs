@@ -1,4 +1,5 @@
 mod entropy;
+mod logger;
 mod matrix;
 mod node;
 mod outcome;
@@ -7,9 +8,10 @@ mod types;
 mod util;
 mod words;
 
-use crate::solver::Solver;
+use solver::Solver;
 
 fn main() {
+    logger::init().unwrap();
     Solver::demo_two_up();
     // Solver::demo();
 }
