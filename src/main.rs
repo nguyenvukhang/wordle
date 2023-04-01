@@ -1,4 +1,5 @@
 mod matrix;
+mod entropy;
 mod node;
 mod types;
 mod util;
