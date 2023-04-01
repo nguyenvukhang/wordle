@@ -116,8 +116,12 @@ impl Matrix {
                 if g1 == g2 {
                     continue;
                 }
-                let ent2 = self.entropy(g2, &answers);
-                entropy2 += ent2 * out_freq[o1 as usize] as f64;
+                let mut freq = [0; 243];
+                for a in &answers {
+                    freq[self.outcome(g2, *a) as usize] += 1;
+                }
+                let ent = build_entropy(freq, answers.len());
+                entropy2 += ent * out_freq[o1 as usize] as f64;
             }
 
             println!("`{}` -> {}:", st(GUESSES[guess]), outcome_str(o1));
