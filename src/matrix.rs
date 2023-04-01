@@ -28,19 +28,17 @@ impl Matrix {
     }
 
     pub fn entropy(&mut self, guess: usize, answers: &Vec<usize>) -> f64 {
-        let mut freq = [0; 243];
+        let (mut freq, mut ent, n) = ([0; 243], 0.0, answers.len() as f64);
         for answer in answers {
             freq[self.outcome(guess, *answer) as usize] += 1;
         }
-        let mut entropy = 0.0;
-        let n = answers.len() as f64;
         for f in freq {
             if f > 0 {
                 let f = f as f64;
-                entropy += (f / n) * (n / f).log2();
+                ent += (f / n) * (n / f).log2();
             }
         }
-        entropy
+        ent
     }
 
     pub fn suggest(&mut self, answers: &Vec<usize>) -> usize {
