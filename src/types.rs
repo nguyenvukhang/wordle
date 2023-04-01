@@ -13,7 +13,6 @@ pub const GREEN: [u8; 5] = [162, 54, 18, 6, 2];
 
 pub type Word = [u8; 5];
 
-#[cfg(test)]
 #[allow(unused)]
 pub fn moutcome(text: &str) -> Outcome {
     let text = text.as_bytes();
@@ -24,7 +23,7 @@ pub fn moutcome(text: &str) -> Outcome {
     })
 }
 
-#[cfg(test)]
+#[allow(unused)]
 pub fn outcome_str(num: Outcome) -> String {
     let mut x = num;
     let mut res = [b' '; 5];
