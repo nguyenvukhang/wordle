@@ -10,7 +10,7 @@ mod words;
 use solver::Solver;
 
 fn main() {
-    logger::error();
+    logger::info();
     // Solver::demo_two_up();
     Solver::demo();
 }

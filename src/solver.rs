@@ -29,8 +29,9 @@ impl Solver {
 
             // everytime an outcome is generated, increment the tries by one
             let out = self.matrix.outcome(guess, answer);
-            log::info!("{}", outcome_str(out));
             tries += 1;
+
+            log::debug!("turn {tries} {}", outcome_str(out));
 
             // direct hit on correct answer
             if out == 242 {

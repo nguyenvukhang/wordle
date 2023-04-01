@@ -74,30 +74,32 @@ impl Matrix {
         a.into_iter().filter(|&a| self.outcome(g, a) == o).collect()
     }
 
-    /// Fixing a guess and answer list, calculate the average entropy
-    /// gained from picking the best next guess given any outcome.
-    ///
-    /// Incoming state:
-    ///   history: (start) -> "soare"
-    ///   answer list: full
-    ///
-    /// Processing:
-    ///   if outcome is BBBBY, guess 'denet'
-    ///   if outcome is BYYBG, guess 'bundt'
-    ///   if outcome is BBBYG, guess 'pudic'
-    ///   ... (243 outcomes)
-    ///
-    /// Note that 'denet' is uniquely determined by "soare" & BBBBY
-    /// and that 'bundt' is uniquely determined by "soare" & BYYBG
-    /// and so on.
-    ///
-    /// Each of these 243 uniquely determined next-guesses will have
-    /// their expected information gain. We take that average and add
-    /// it to "soare"'s information gain.
-    ///
-    /// This will be "soare"'s 2-up look-ahead expected information
-    /// gain.
+    /// Runs in O(243×AG) time.
+    /// Runs one best-entropy search per possible outcome.
     pub fn entropy2(&mut self, guess: usize, answers: &Vec<usize>) -> f64 {
+        // Fixing a guess and answer list, calculate the average entropy
+        // gained from picking the best next guess given any outcome.
+        //
+        // Incoming state:
+        //   history: (start) -> "soare"
+        //   answer list: full
+        //
+        // Processing:
+        //   if outcome is BBBBY, guess 'denet'
+        //   if outcome is BYYBG, guess 'bundt'
+        //   if outcome is BBBYG, guess 'pudic'
+        //   ... (243 outcomes)
+        //
+        // Note that 'denet' is uniquely determined by "soare" & BBBBY
+        // and that 'bundt' is uniquely determined by "soare" & BYYBG
+        // and so on.
+        //
+        // Each of these 243 uniquely determined next-guesses will have
+        // their expected information gain. We take that average and add
+        // it to "soare"'s information gain.
+        //
+        // This will be "soare"'s 2-up look-ahead expected information
+        // gain.
         let mut entropy2 = 0.0;
 
         for o1 in 0..243 {
@@ -114,6 +116,9 @@ impl Matrix {
         entropy2 / 243 as f64
     }
 
+    /// Runs in O(243×AG²) time
+    ///
+    /// On each possible 1st guess, find the best-entropy 2nd guess
     pub fn suggest2(&mut self, answers: &Vec<usize>) -> (usize, f64) {
         let mut best = (0, -1.0);
         let guess_count = self.guess_count();
