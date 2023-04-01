@@ -1,5 +1,5 @@
-mod matrix;
 mod entropy;
+mod matrix;
 mod node;
 mod types;
 mod util;
@@ -80,6 +80,13 @@ impl Wordle {
         let idx = GUESSES.iter().position(|v| v == &b"debug").unwrap_or(17);
         self.matrix.entropy2(idx, &answers);
     }
+}
+
+fn bench<F: Fn() -> ()>(title: &str, f: F) {
+    let start = Instant::now();
+    f();
+    let elapsed = Instant::elapsed(&start);
+    println!("[{title}] runtime: {:?}", elapsed);
 }
 
 fn main() {
