@@ -43,11 +43,7 @@ impl Matrix {
                 best = (guess, entropy);
             }
         }
-        log::info!(
-            "`{}` @ {}",
-            get_guess(best.0).unwrap_or("".to_string()),
-            best.1
-        );
+        log::info!("{} @ {:.8}", get_guess(best.0).unwrap_or_default(), best.1);
         best.0
     }
 
@@ -78,8 +74,8 @@ impl Matrix {
         a.into_iter().filter(|&a| self.outcome(g, a) == o).collect()
     }
 
-    /// Fixing a guess and answer list, calculate the average entropy gained
-    /// from picking the best next guess given any outcome.
+    /// Fixing a guess and answer list, calculate the average entropy
+    /// gained from picking the best next guess given any outcome.
     ///
     /// Incoming state:
     ///   history: (start) -> "soare"
@@ -89,8 +85,18 @@ impl Matrix {
     ///   if outcome is BBBBY, guess 'denet'
     ///   if outcome is BYYBG, guess 'bundt'
     ///   if outcome is BBBYG, guess 'pudic'
-    ///   ...
+    ///   ... (243 outcomes)
     ///
+    /// Note that 'denet' is uniquely determined by "soare" & BBBBY
+    /// and that 'bundt' is uniquely determined by "soare" & BYYBG
+    /// and so on.
+    ///
+    /// Each of these 243 uniquely determined next-guesses will have
+    /// their expected information gain. We take that average and add
+    /// it to "soare"'s information gain.
+    ///
+    /// This will be "soare"'s 2-up look-ahead expected information
+    /// gain.
     pub fn entropy2(&mut self, guess: usize, answers: &Vec<usize>) -> f64 {
         let (g1, n) = (guess, self.guess_count());
         let out_freq = self.out_freq(g1, answers);

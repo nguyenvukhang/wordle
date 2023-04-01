@@ -1,8 +1,8 @@
 use crate::{
     matrix::Matrix,
     node::Node,
-    types::{Word, outcome_str},
-    words::{self, find_guess, get_guess},
+    types::{outcome_str, Word},
+    words::{self, find_guess},
 };
 use std::time::{Duration, Instant};
 
@@ -26,11 +26,10 @@ impl Solver {
                 Some(v) => v,
                 None => self.matrix.suggest(&remaining_ans),
             };
-            eprintln!("guess   -> {:?}", get_guess(guess));
 
             // everytime an outcome is generated, increment the tries by one
             let out = self.matrix.outcome(guess, answer);
-            eprintln!("outcome -> {}", outcome_str(out));
+            log::info!("{}", outcome_str(out));
             tries += 1;
 
             // direct hit on correct answer
