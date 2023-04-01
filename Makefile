@@ -1,6 +1,6 @@
 dev:
 	cargo build --release
-	RUST_LOG=info ./target/release/wordle
+	./target/release/wordle
 
 test:
 	cargo test

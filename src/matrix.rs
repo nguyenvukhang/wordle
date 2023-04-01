@@ -1,6 +1,6 @@
 use crate::types::{Outcome, Word};
 use crate::util::outcome;
-use crate::words::{find_guess, get_guess};
+use crate::words::{display_guess, find_guess, get_guess};
 
 pub struct Matrix {
     db: Vec<Vec<Outcome>>,
@@ -34,7 +34,7 @@ impl Matrix {
         ent
     }
 
-    pub fn suggest(&mut self, answers: &Vec<usize>) -> usize {
+    pub fn suggest(&mut self, answers: &Vec<usize>) -> (usize, f64) {
         let mut best = (0, -1.0);
         let guess_count = self.guess_count();
         for guess in 0..guess_count {
@@ -43,8 +43,8 @@ impl Matrix {
                 best = (guess, entropy);
             }
         }
-        log::info!("{} @ {:.8}", get_guess(best.0).unwrap_or_default(), best.1);
-        best.0
+        log::info!("{} @ {:.8}", display_guess(best.0), best.1);
+        best
     }
 
     pub fn answer_count(&self) -> usize {
@@ -57,16 +57,6 @@ impl Matrix {
 
     pub fn fresh_answer_set(&self) -> Vec<usize> {
         (0..self.answer_count()).collect()
-    }
-
-    fn out_freq(&self, guess: usize, answers: &Vec<usize>) -> Vec<usize> {
-        let (mut v, g, a) = (
-            (0..243).map(|_| 0).collect::<Vec<_>>(),
-            guess,
-            answers.iter(),
-        );
-        a.for_each(|a| v[self.outcome(g, *a) as usize] += 1);
-        v
     }
 
     fn shrink(&self, guess: usize, outcome: Outcome, answers: &Vec<usize>) -> Vec<usize> {
@@ -98,27 +88,19 @@ impl Matrix {
     /// This will be "soare"'s 2-up look-ahead expected information
     /// gain.
     pub fn entropy2(&mut self, guess: usize, answers: &Vec<usize>) -> f64 {
-        let (g1, n) = (guess, self.guess_count());
-        let out_freq = self.out_freq(g1, answers);
         let mut entropy2 = 0.0;
 
-        for o1 in 0..1 {
-            // `guess` will never lead to this outcome.
-            // example: guess is "iiiii" gives outcome GGGGG.
-            if out_freq[o1] == 0 {
+        for o1 in 0..243 {
+            // `guess` + outcome `o1` -> results in this answer list
+            let answers = self.shrink(guess, o1, answers);
+
+            // not possible to reach an outcome of o1.
+            if answers.is_empty() {
                 continue;
             }
 
-            // `guess` + outcome `o1` -> results in this answer list
-            let _ = self.shrink(g1, o1 as Outcome, answers);
-
-            for g2 in 0..n {
-                if g1 == g2 {
-                    continue;
-                }
-            }
+            entropy2 += self.suggest(&answers).1;
         }
-        entropy2 /= (n * n) as f64;
-        entropy2
+        entropy2 / 243 as f64
     }
 }

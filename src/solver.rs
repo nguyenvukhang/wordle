@@ -24,7 +24,7 @@ impl Solver {
         while remaining_ans.len() > 1 {
             let guess = match graph.guess {
                 Some(v) => v,
-                None => self.matrix.suggest(&remaining_ans),
+                None => self.matrix.suggest(&remaining_ans).0,
             };
 
             // everytime an outcome is generated, increment the tries by one
@@ -78,9 +78,6 @@ impl Solver {
         let entropy = self.matrix.entropy2(i, &remaining_ans);
         println!("calculated 2-up entropy of `{word}` is:");
         println!("{}", entropy);
-
-        let mut graph = Node::new();
-        self.solve_one(i + 2, &mut graph);
     }
 
     #[allow(unused)]
