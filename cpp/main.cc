@@ -6,17 +6,16 @@
 #include <string>
 
 int main(int argc, char *argv[]) {
-  outcome_test();
+  if (outcome_test() == 1) return 0;
   int x = 0;
   auto start = std::chrono::high_resolution_clock::now();
-  const char **guess = Words::GUESSES;
-  const char **answer = Words::ANSWERS;
+  auto guesses = Words::GUESSES;
+  auto answers = Words::ANSWERS;
 
-  for (int g = 0; g < Words::GUESS_COUNT; g++, guess++) {
-    answer = Words::ANSWERS;
-    for (int a = 0; a < Words::ANSWER_COUNT; a++, answer++) {
-      Outcome out = outcome(*guess, *answer);
-      x += out;
+  for (int g = 0; g < Words::GUESS_COUNT; g++) {
+    for (int a = 0; a < Words::ANSWER_COUNT; a++) {
+      x += outcome(guesses[g], answers[a]);
+      // x++;
     }
   }
 

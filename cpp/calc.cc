@@ -2,12 +2,18 @@
 #include "types.h"
 #include <iostream>
 
+void print_mask(char d[27]) {
+  for (int i = 1; i < 27; i++)
+    std::cout << (int)(d[i]) << ' ';
+  std::cout << std::endl;
+}
+
 const Outcome outcome(const char *guess, const char *answer) {
   Outcome outcome = 0;
   char d[27] = {0};
 
   // check greens
-  for (int i = 0; i < 5; i++) {
+  for (char i = 0; i < 5; i++) {
     if (guess[i] == answer[i]) {
       outcome += GREEN[i];
       d[0] |= 1 << i;
@@ -17,7 +23,7 @@ const Outcome outcome(const char *guess, const char *answer) {
   }
 
   // check yellows
-  for (int i = 0; i < 5; i++) {
+  for (char i = 0; i < 5; i++) {
     if (d[guess[i] % 32] > 0 && (d[0] & 1 << i) == 0) {
       outcome += YELLOW[i];
       d[guess[i] % 32]--;
@@ -29,7 +35,7 @@ const Outcome outcome(const char *guess, const char *answer) {
 
 std::string const outcome_str(Outcome outcome) {
   Outcome x = outcome;
-  char resu[5];
+  char resu[6] = {0};
   for (int i = 0; i < 5; i++) {
     switch (x % 3) {
     case 2:
@@ -58,13 +64,13 @@ const int outcome_test() {
     }
     return false;
   };
-  if (f("zzzzz", "xxxxx", "BBBBB")) return 0;
-  if (f("zzzzz", "zzzzz", "GGGGG")) return 0;
-  if (f("eezzz", "zzzee", "YYGYY")) return 0;
-  if (f("adieu", "audio", "GYYBY")) return 0;
-  if (f("crust", "rebut", "BYYBG")) return 0;
-  if (f("azzzz", "zazzz", "YYGGG")) return 0;
-  if (f("azzzz", "zxxxx", "BYBBB")) return 0;
+  if (f("zzzzz", "xxxxx", "BBBBB")) return 1;
+  if (f("zzzzz", "zzzzz", "GGGGG")) return 1;
+  if (f("eezzz", "zzzee", "YYGYY")) return 1;
+  if (f("adieu", "audio", "GYYBY")) return 1;
+  if (f("crust", "rebut", "BYYBG")) return 1;
+  if (f("azzzz", "zazzz", "YYGGG")) return 1;
+  if (f("azzzz", "zxxxx", "BYBBB")) return 1;
   std::cerr << "[outcome_test] All tests passed!" << std::endl;
   return 0;
 }

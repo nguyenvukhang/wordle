@@ -20,6 +20,7 @@ fn outcome_bench() {
     for a in &answers {
         for g in &guesses {
             x += outcome(g, a) as usize
+            // x += 1;
         }
     }
     println!("{x}");

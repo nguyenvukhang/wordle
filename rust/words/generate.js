@@ -40,8 +40,8 @@ build.cpp = () => {
   const frame = (guesses, answers, G, A) => `\
 #include "words.h"
 
-const char *Words::ANSWERS[]{${answers}};
-const char *Words::GUESSES[]{${guesses}};
+const char Words::ANSWERS[][6]{${answers}};
+const char Words::GUESSES[][6]{${guesses}};
 const int Words::ANSWER_COUNT = ${A};
 const int Words::GUESS_COUNT = ${G};
 `;

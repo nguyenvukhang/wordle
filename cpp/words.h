@@ -6,8 +6,8 @@
 
 class Words {
 public:
-  static const char *GUESSES[];
-  static const char *ANSWERS[];
+  static const char GUESSES[][6];
+  static const char ANSWERS[][6];
   static const int GUESS_COUNT;
   static const int ANSWER_COUNT;
 };
