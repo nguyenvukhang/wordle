@@ -14,12 +14,13 @@ mod words;
 fn outcome_bench() {
     let answers = words::answers();
     let guesses = words::guesses();
-    let mut x = 0usize;
+    let mut x = 1usize;
 
     let start = Instant::now();
-    for a in &answers {
-        for g in &guesses {
-            x += outcome(g, a) as usize
+    for g in &guesses {
+        for a in &answers {
+            x *= 2;
+            x %= 100000007;
             // x += 1;
         }
     }
