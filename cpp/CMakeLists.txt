@@ -8,8 +8,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1) # to build compile_commands.json
 
 set(PROJECT_SOURCES
   main.cc
-  words.h
 
+  words.h words.cc
   calc.h calc.cc
 )
 

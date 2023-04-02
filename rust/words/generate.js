@@ -20,6 +20,8 @@ function writeFile(filepath, content, fmt = () => {}) {
 const build = {};
 const GUESSES = readFile("guesses");
 const ANSWERS = readFile("answers");
+GUESSES.sort();
+ANSWERS.sort();
 
 /**
  * @param {string} filename
@@ -35,22 +37,20 @@ build.rust = (filename, words) => {
 };
 
 build.cpp = () => {
-  const frame = (guesses, answers) => `\
-#ifndef WORDLE_WORDS_H
-#define WORDLE_WORDS_H
+  const frame = (guesses, answers, G, A) => `\
+#include "words.h"
 
-#include <string>
-#include <vector>
-
-const std::vector<std::string> GUESSES{${guesses}};
-const std::vector<std::string> ANSWERS{${answers}};
-
-#endif`;
+const char *Words::ANSWERS[]{${answers}};
+const char *Words::GUESSES[]{${guesses}};
+const int Words::ANSWER_COUNT = ${A};
+const int Words::GUESS_COUNT = ${G};
+`;
+  const [G, A] = [GUESSES, ANSWERS].map((v) => v.length)
   let [guesses, answers] = [GUESSES, ANSWERS].map(JSON.stringify);
   guesses = guesses.replace("[", "").replace("]", "");
   answers = answers.replace("[", "").replace("]", "");
-  const content = frame(guesses, answers);
-  const filepath = join(targetDir.cpp, "words.h");
+  const content = frame(guesses, answers, G, A);
+  const filepath = join(targetDir.cpp, "words.cc");
   writeFile(filepath, content);
 };
 

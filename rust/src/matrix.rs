@@ -1,7 +1,7 @@
 use std::time::Instant;
 
+use crate::outcome::outcome;
 use crate::types::{Outcome, Word};
-use crate::util::outcome;
 use crate::words::display_guess;
 
 pub struct Matrix {
