@@ -7,21 +7,20 @@ const Outcome outcome(const char *guess, const char *answer) {
   char d[27] = {0};
 
   // check greens
-  for (int i = 0; i < 5; i++, guess++, answer++) {
-    if (*guess == *answer) {
+  for (int i = 0; i < 5; i++) {
+    if (guess[i] == answer[i]) {
       outcome += GREEN[i];
       d[0] |= 1 << i;
     } else {
-      d[*answer % 32]++;
+      d[answer[i] % 32]++;
     }
   }
-  guess -= 5;
 
   // check yellows
-  for (int i = 0; i < 5; i++, guess++) {
-    if (d[*guess % 32] > 0 && (d[0] & 1 << i) == 0) {
+  for (int i = 0; i < 5; i++) {
+    if (d[guess[i] % 32] > 0 && (d[0] & 1 << i) == 0) {
       outcome += YELLOW[i];
-      d[*guess % 32]--;
+      d[guess[i] % 32]--;
     }
   }
 
