@@ -4,10 +4,12 @@ const { join, relative } = require("path");
 
 const TARGET_DIR = join(__dirname, "../src/words");
 
+const build = {};
+
 /**
  * @param {string} filename
  */
-function build(filename) {
+build.rust = (filename) => {
   const words = readFileSync(filename, "utf8").trim().split("\n");
   const content =
     `pub const ${filename.toUpperCase()}: [&[u8; 5]; ${words.length}] = [` +
@@ -20,7 +22,9 @@ function build(filename) {
   try {
     spawnSync("rustfmt", [filepath], { cwd: TARGET_DIR });
   } catch {}
-}
+};
 
-build("guesses");
-build("answers");
+build.cpp = () => {};
+
+build.rust("guesses");
+build.rust("answers");
