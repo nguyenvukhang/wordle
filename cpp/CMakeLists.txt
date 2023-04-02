@@ -9,6 +9,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1) # to build compile_commands.json
 set(PROJECT_SOURCES
   main.cc
   words.h
+
+  calc.h calc.cc
 )
 
 add_executable(wordle ${PROJECT_SOURCES})
