@@ -2,25 +2,25 @@ use crate::types::{Outcome, Word, GREEN, YELLOW};
 
 macro_rules! letter {
     ($n:expr) => {
-        $n as usize % 32 - 1
+        $n as usize % 32
     };
 }
 
 /// Generate an outcome from scratch (faster than a HashMap, apparently)
 pub fn outcome(guess: &Word, answer: &Word) -> Outcome {
-    let (mut outcome, mut d, mut mask) = (0, [0u8; 26], 0u8);
+    let (mut outcome, mut d) = (0, [0u8; 27]);
     // check greens
     for i in 0..5 {
         if guess[i] == answer[i] {
             outcome += GREEN[i];
-            mask |= 1 << i;
+            d[0] |= 1 << i;
         } else {
             d[letter!(answer[i])] += 1;
         }
     }
     // check yellows
     for i in 0..5 {
-        if d[letter!(guess[i])] > 0 && mask & 1 << i == 0 {
+        if d[letter!(guess[i])] > 0 && d[0] & 1 << i == 0 {
             outcome += YELLOW[i];
             d[letter!(guess[i])] -= 1;
         }
