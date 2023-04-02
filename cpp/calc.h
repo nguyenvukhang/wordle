@@ -5,7 +5,8 @@
 
 #include <string>
 
-Outcome const outcome(const char *guess, const char *answer);
+const Outcome outcome(const char *guess, const char *answer);
 std::string const outcome_str(Outcome);
+const int outcome_test();
 
 #endif
