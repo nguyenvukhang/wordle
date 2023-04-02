@@ -22,6 +22,14 @@ impl Matrix {
         self.db[answer][guess]
     }
 
+    pub fn is_outcome(&self, guess: usize, answer: usize, outcome: Outcome) -> bool {
+        self.db[answer][guess] == outcome
+    }
+
+    pub fn export(&mut self) -> Vec<Vec<Outcome>> {
+        std::mem::take(&mut self.db)
+    }
+
     /// Runs in O(A) time.
     /// Matches one guess against all answers.
     pub fn entropy(&mut self, guess: usize, answers: &Vec<usize>) -> f64 {
